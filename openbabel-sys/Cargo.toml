@@ -1,0 +1,13 @@
+[package]
+name = "openbabel-sys"
+version = "0.1.0"
+edition = "2018"
+authors = ["Qin Wan <rogerwq@gmail.com>"]
+license = "MIT"
+description = "Native bindings to OpenBabel"
+
+[dependencies]
+cxx = "1.0"
+
+[build-dependencies]
+cxx-build = "1.0"

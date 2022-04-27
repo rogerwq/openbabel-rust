@@ -1,0 +1,9 @@
+[package]
+name = "openbabel-rust"
+version = "0.1.0"
+edition = "2018"
+authors = ["Qin Wan <rogerwq@gmail.com>"]
+license = "MIT"
+
+[dependencies]
+openbabel-sys = { path = "openbabel-sys" }
