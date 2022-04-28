@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2018"
 authors = ["Qin Wan <rogerwq@gmail.com>"]
 license = "MIT"
+description = "Rust bindings to chemical toolbox OpenBabel"
 repository = "https://github.com/rogerwq/openbabel-rust"
 homepage = "https://github.com/rogerwq/openbabel-rust"
 documentation = "https://docs.rs/openbabel"
