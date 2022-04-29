@@ -12,5 +12,5 @@ keywords = ["cheminformatics", "openbabel"]
 categories = ["science"]
 
 [dependencies]
-openbabel-sys = { path = "openbabel-sys", version = "0.1.0" }
+openbabel-sys = { path = "openbabel-sys", version = "0.1.1" }
 cxx = "1.0"

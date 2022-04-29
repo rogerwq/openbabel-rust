@@ -1,6 +1,6 @@
 [package]
 name = "openbabel-sys"
-version = "0.1.0+openbabel-3.1.1"
+version = "0.1.1+openbabel-3.1.1"
 edition = "2018"
 authors = ["Qin Wan <rogerwq@gmail.com>"]
 license = "MIT"
@@ -10,8 +10,13 @@ homepage = "https://github.com/rogerwq/openbabel-rust"
 documentation = "https://docs.rs/openbabel-sys"
 keywords = ["cheminformatics", "openbabel", "cplusplus", "ffi"]
 categories = ["science"]
-exclude = [
-    "openbabel/test/*"
+include = [
+    "/openbabel/src/*.cpp",
+    "/openbabel/src/stereo/*.cpp",
+    "/openbabeel/src/math/*.cpp",
+    "/openbabel/src/formats/*.cpp",
+    "/openbabel/src/fingerprints/*.cpp",
+    "/src"
 ]
 
 [dependencies]
