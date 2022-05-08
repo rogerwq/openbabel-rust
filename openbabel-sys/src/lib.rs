@@ -27,3 +27,19 @@ pub mod ob {
         fn OBSmartsPattern_match(pattern: &UniquePtr<OBSmartsPattern>, mol: &UniquePtr<OBMol>) -> UniquePtr<CxxVector<i32>>;
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_fp2_fp3_fp4() {
+        cxx::let_cxx_string!(smiles = "c1ccccc1");
+        let mol = ob::OBConversion_smi_to_mol(&smiles);
+        for fp_name in vec!["FP2", "FP3", "FP4"] {
+            cxx::let_cxx_string!(name = fp_name);
+            let p_data = ob::OBFingerprint_get_fingerprint(&name, &mol, 4096);
+            assert_eq!(p_data.as_ref().unwrap().len(), 128);
+        }
+    }
+}

@@ -18,3 +18,4 @@ Cargo.lock
 
 openbabel-sys/target
 .DS_Store
+.vscode

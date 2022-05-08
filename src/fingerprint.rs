@@ -6,6 +6,9 @@ pub struct Fingerprint {
 }
 
 impl Fingerprint {
+    /// Fingerprint FP3 & FP4 require data files of patterns.txt and SMARTS_InteLigand.txt 
+    /// If "Open Babel Error in Read PatternFile" is encountered,
+    /// setting BABEL_DATADIR to where those files are located will solve the issue.
     pub fn new(name_fp: &str) -> Self {
         Self { name: name_fp.to_string() }
     }
@@ -22,10 +25,22 @@ mod test_mod_fingerprint {
 
     #[test]
     fn test_fingerprint_ecfp() {
-        let fp = Fingerprint::new("ECFP4"); // ECFP0, ECFP2, ECFP4, ECFP8, ECFP10 are avaialble
-        let mol = molecule::Molecule::new_from_smiles("CCNCC");
-        let fp_data = fp.get_fingerprint(&mol, 4096);
-        assert_eq!(fp_data.len(), 128);
+        for s in vec!["ECFP0", "ECFP2", "ECFP4", "ECFP6", "ECFP8", "ECFP10"] {
+            let fp = Fingerprint::new(s); 
+            let mol = molecule::Molecule::new_from_smiles("CCNCC");
+            let fp_data = fp.get_fingerprint(&mol, 4096);
+            assert_eq!(fp_data.len(), 128);
+        }
+    }
+
+    #[test]
+    fn test_fingerprint_fp() {
+        for s in vec!["FP2", "FP3", "FP4"] {
+            let fp = Fingerprint::new(s); 
+            let mol = molecule::Molecule::new_from_smiles("CCNCC");
+            let fp_data = fp.get_fingerprint(&mol, 4096);
+            assert_eq!(fp_data.len(), 128);
+        }
     }
 }
 

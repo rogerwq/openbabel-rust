@@ -16,6 +16,8 @@ include = [
     "/openbabeel/src/math/*.cpp",
     "/openbabel/src/formats/*.cpp",
     "/openbabel/src/fingerprints/*.cpp",
+    "/openbabel/data/patterns.txt",
+    "/openbabel/data/SMARTS_InteLigand.txt",
     "/src"
 ]
 

@@ -11,3 +11,8 @@ Refer to test cases for how to use.
 :white_check_mark: OBMol 
 :white_check_mark: OBFingerprint 
 :white_check_mark: OBSmartsPatten 
+
+
+## References
+- Code structure: [libcurl bindings for Rust](https://github.com/alexcrichton/curl-rust)
+- Openbabel [documentation](http://openbabel.org/wiki/Main_Page)
