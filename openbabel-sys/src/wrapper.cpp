@@ -62,13 +62,53 @@ double OBMol_get_mol_wt(const std::unique_ptr<OBMol> & pMol) { return pMol->GetM
 //     return std::unique_ptr<OBFingerprint>(pFp);
 // }
 
-std::unique_ptr<std::vector<unsigned int>> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
+std::unique_ptr<fingerprint2> OBFingerprint_get_fingerprint2_instance() {
+    return std::make_unique<fingerprint2>("FP2_temp", false);
+}
+
+std::unique_ptr<std::vector<unsigned int>> OBFingerprint_fingerprint2_get_fingerprint(const std::unique_ptr<fingerprint2> & pFP, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
     std::vector<unsigned int> fps;
-    OBFingerprint* pFp = OBFingerprint::FindFingerprint(fp_name.c_str());
-    if (!pFp->GetFingerprint(pMol.get(), fps, nbits)) {
+    if (!pFP->GetFingerprint(pMol.get(), fps, nbits)) {
         fps.resize(0);
     }
 
+    return std::make_unique<std::vector<unsigned int>>(std::move(fps));
+}
+
+// std::unique_ptr<std::vector<unsigned int>> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
+//     /*
+//         OpenBabel creates global variables for fingerprints and uses a pre-loaded plugin system to manage different types of fingerprint.
+//         Memory error "pointer being freed was not allocated" occurs randomly. The root cause has not been confirmed.
+//         Debug method:
+//             1. lldb
+//             2. create target "..."
+//             3. b malloc_error_break
+//             4. r
+//     */
+//     std::vector<unsigned int> fps;
+//     OBFingerprint* pFp = OBFingerprint::FindFingerprint(fp_name.c_str());
+//     if (!pFp->GetFingerprint(pMol.get(), fps, nbits)) {
+//         fps.resize(0);
+//     }
+
+//     return std::make_unique<std::vector<unsigned int>>(std::move(fps));
+// }
+
+std::unique_ptr<std::vector<unsigned int>> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
+    std::vector<unsigned int> fps;
+    OBFingerprint* pFP;
+    if (fp_name == "FP2") {
+        pFP = new fingerprint2("FP2_temp", false);
+    } else {
+        fps.resize(0);
+        return std::make_unique<std::vector<unsigned int>>(std::move(fps));
+    }
+
+    if (!pFP->GetFingerprint(pMol.get(), fps, nbits)) {
+        fps.resize(0);
+    }
+
+    free(pFP);
     return std::make_unique<std::vector<unsigned int>>(std::move(fps));
 }
 
