@@ -1,5 +1,7 @@
 #include <sstream>
 #include <vector>
+#include "finger2.h"
+#include "finger3.h"
 #include "wrapper.h"
 
 /*
@@ -11,6 +13,13 @@ References:
 */
 
 namespace OpenBabel {
+
+// For Debug Purpose
+void print_global_instances() {
+    std::cout << "theSMIFormat: " << &theSMIFormat << std::endl;
+}
+
+// Debug - End 
 
 // OBConversion 
 
@@ -62,17 +71,17 @@ double OBMol_get_mol_wt(const std::unique_ptr<OBMol> & pMol) { return pMol->GetM
 //     return std::unique_ptr<OBFingerprint>(pFp);
 // }
 
-std::unique_ptr<fingerprint2> OBFingerprint_get_fingerprint2_instance() {
-    return std::make_unique<fingerprint2>("FP2_temp", false);
-}
-
-std::unique_ptr<std::vector<unsigned int>> OBFingerprint_fingerprint2_get_fingerprint(const std::unique_ptr<fingerprint2> & pFP, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
-    std::vector<unsigned int> fps;
-    if (!pFP->GetFingerprint(pMol.get(), fps, nbits)) {
-        fps.resize(0);
+OBFingerprint* OBFingerprint_get_ptr(const std::string &fp_name) {
+    if (fp_name == "FP2") {
+        // return new fingerprint2("FP2_temp", false);
+        return new OBFingerprint::
+    } else if (fp_name == "FP3") {
+        return new PatternFP("FP3_temp");
+    } else if (fp_name == "FP4") {
+        return new PatternFP("FP4_temp", "SMARTS_InteLigand.txt");
+    } else {
+        return nullptr; 
     }
-
-    return std::make_unique<std::vector<unsigned int>>(std::move(fps));
 }
 
 // std::unique_ptr<std::vector<unsigned int>> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
@@ -94,22 +103,49 @@ std::unique_ptr<std::vector<unsigned int>> OBFingerprint_fingerprint2_get_finger
 //     return std::make_unique<std::vector<unsigned int>>(std::move(fps));
 // }
 
-std::unique_ptr<std::vector<unsigned int>> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
-    std::vector<unsigned int> fps;
-    OBFingerprint* pFP;
-    if (fp_name == "FP2") {
-        pFP = new fingerprint2("FP2_temp", false);
-    } else {
-        fps.resize(0);
-        return std::make_unique<std::vector<unsigned int>>(std::move(fps));
-    }
+std::unique_ptr<FPData> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
+    FPData fps;
+    OBFingerprint* pFP = OBFingerprint_get_ptr(fp_name);
 
-    if (!pFP->GetFingerprint(pMol.get(), fps, nbits)) {
+    if (pFP && !pFP->GetFingerprint(pMol.get(), fps, nbits)) {
         fps.resize(0);
     }
 
-    free(pFP);
-    return std::make_unique<std::vector<unsigned int>>(std::move(fps));
+    if (pFP) free(pFP);
+
+    return std::make_unique<FPData>(std::move(fps));
+}
+
+std::unique_ptr<FPData> OBFingerprint_get_fingerprint_in_batch(const std::string &fp_name, const rust::Vec<rust::String> & smiles_vec, u_int32_t nbits) {
+    FPData fps, results;
+    results.resize(0);
+
+    OBFingerprint* pFP = OBFingerprint_get_ptr(fp_name);
+    OBConversion conv;
+    OBMol* pMol = new OBMol();
+
+    if (pFP && conv.SetInFormat("smi")) {
+        for (std::size_t i = 0; i < smiles_vec.size(); ++i) {
+            fps.resize(0);
+
+            // SetInStream(new stringstream(input), true);
+            // Read(pOb);
+
+            if (conv.ReadString(pMol, std::string(smiles_vec[i]))) {
+                //if(!pFP->GetFingerprint(pMol, fps, nbits)) {
+                     fps.resize(nbits / 32);
+                // }
+            } else { // If the conversion from SMILES to mol is not successful, set the fingerprint data to ZERO.
+                fps.resize(nbits / 32);
+            }
+            results.insert(results.end(), std::make_move_iterator(fps.begin()), std::make_move_iterator(fps.end()));
+        }
+    }
+
+    if (pFP) free(pFP);
+    if (pMol) free(pMol);
+
+    return std::make_unique<FPData>(std::move(results));
 }
 
 // OBFingerprint - End

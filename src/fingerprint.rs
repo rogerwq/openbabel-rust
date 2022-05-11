@@ -67,6 +67,11 @@ impl Fingerprint {
         cxx::let_cxx_string!(name = &self.kind.as_str());
         ob::OBFingerprint_get_fingerprint(&name, &mol.ob_mol, *self.kind.get_nbits()) // If nbits <=0, nbits = 4096
     }
+
+    pub fn get_fingerprint_in_batch(&self, smiles_vec: &Vec<String>) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
+        cxx::let_cxx_string!(name = &self.kind.as_str());
+        ob::OBFingerprint_get_fingerprint_in_batch(&name, smiles_vec, *self.kind.get_nbits())
+    }
 }
 
 #[cfg(test)]
@@ -83,22 +88,33 @@ mod test_mod_fingerprint {
     //     }
     // }
 
-    // #[test]
-    // fn test_fingerprint_fp() {
-    //     for s in vec!["FP2", "FP3", "FP4"] {
-    //         let fp = Fingerprint::new(s); 
-    //         let mol = molecule::Molecule::new_from_smiles("CCNCC");
-    //         let fp_data = fp.get_fingerprint(&mol, 4096);
-    //         assert_eq!(fp_data.len(), 128);
-    //     }
-    // }
+    #[test]
+    fn test_fingerprint_fp() {
+        let mol = molecule::Molecule::new_from_smiles("CCNCC");
+        for fp in vec![
+            Fingerprint::new(FingerprintOpenBabelKind::FP2 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::FP3 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::FP4 { nbits: 4096 })
+        ].iter() {
+            let fp_data = fp.get_fingerprint(&mol);
+            assert_eq!(fp_data.len(), 128);
+        }
+    }
 
     #[test]
-    fn test_fingerprint_fp2() {
-        let fp = Fingerprint::new(FingerprintOpenBabelKind::FP2 { nbits: 4096 });
-        let mol = molecule::Molecule::new_from_smiles("CCNCC");
-        let fp_data = fp.get_fingerprint(&mol);
-        assert_eq!(fp_data.len(), 128);
+    fn test_fingerprint_fp_batch() {
+        for fp in vec![
+            Fingerprint::new(FingerprintOpenBabelKind::FP2 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::FP3 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::FP4 { nbits: 4096 })
+        ].iter() {
+            let smiles_vec = vec![
+                String::from("CCNCC"),
+                String::from("c1ccccc1")
+            ];
+            let _fp_data = fp.get_fingerprint_in_batch(&smiles_vec);
+            // assert_eq!(fp_data.len(), 128 * 2);
+        }
     }
 
     // #[test]

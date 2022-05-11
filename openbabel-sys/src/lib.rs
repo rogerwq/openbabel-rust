@@ -4,7 +4,7 @@ pub mod ob {
         include!("openbabel-sys/src/wrapper.h");
         type OBMol;
         type OBSmartsPattern;
-        type OBFingerprint;
+        // type OBFingerprint;
 
         // OBConversion
         fn OBConversion_smi_to_mol(smiles: &CxxString) -> UniquePtr<OBMol>;
@@ -21,6 +21,7 @@ pub mod ob {
         // fn OBFingerprint_get_fingerprint2_instance() -> UniquePtr<fingerprint2>;
         // fn OBFingerprint_fingerprint2_get_fingerprint(fp: &UniquePtr<fingerprint2>, mol: &UniquePtr<OBMol>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
         fn OBFingerprint_get_fingerprint(fp_name: &CxxString, mol: &UniquePtr<OBMol>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
+        fn OBFingerprint_get_fingerprint_in_batch(fp_name: &CxxString, smiles_vec: &Vec<String>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
 
         // OBSmartsPattern
         fn OBSmartsPattern_new(smarts: &CxxString) -> UniquePtr<OBSmartsPattern>;
@@ -36,7 +37,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_fp2_fp3_fp4() {
+    fn test_fingerprint_fp() {
         cxx::let_cxx_string!(smiles = "c1ccccc1");
         let mol = ob::OBConversion_smi_to_mol(&smiles);
         for fp_name in vec!["FP2", "FP3", "FP4"] {

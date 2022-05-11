@@ -4,6 +4,7 @@
 #include <openbabel/mol.h>
 #include <openbabel/parsmart.h>
 #include <openbabel/obconversion.h>
+#include <openbabel/fingerprint.h>
 
 namespace OpenBabel {
     class OBMol;
@@ -20,8 +21,9 @@ namespace OpenBabel {
     double OBMol_get_mol_wt(const std::unique_ptr<OBMol> & pMol);
 
     // OBFingerprint
-    std::unique_ptr<std::vector<unsigned int>> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits);
-    std::unique_ptr<std::vector<unsigned int>> OBFingerprint_get_fingerprint_in_batch(const std::string &fp_name, const std::vector<std::unique_ptr<OBMol>> & pMol, u_int32_t nbits);
+    typedef std::vector<unsigned int> FPData;
+    std::unique_ptr<FPData> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits);
+    std::unique_ptr<FPData> OBFingerprint_get_fingerprint_in_batch(const std::string &fp_name, const rust::Vec<rust::String> & smiles_vec, u_int32_t nbits);
 
     // OBSmartsPattern
     std::unique_ptr<OBSmartsPattern> OBSmartsPattern_new(const std::string &smarts);

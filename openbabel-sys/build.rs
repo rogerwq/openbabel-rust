@@ -129,7 +129,7 @@ fn main() {
         .file("openbabel/src/math/matrix3x3.cpp")
         .file("openbabel/src/formats/smilesformat.cpp")
         // .file("openbabel/src/fingerprints/finger2.cpp")
-        .file("openbabel/src/fingerprints/finger3.cpp")
+        // .file("openbabel/src/fingerprints/finger3.cpp")
         .file("openbabel/src/fingerprints/fingerecfp.cpp")
         .file("src/fingerprint/finger2.cpp")
         .file("src/wrapper.cpp")
