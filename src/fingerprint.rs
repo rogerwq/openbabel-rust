@@ -112,8 +112,8 @@ mod test_mod_fingerprint {
                 String::from("CCNCC"),
                 String::from("c1ccccc1")
             ];
-            let _fp_data = fp.get_fingerprint_in_batch(&smiles_vec);
-            // assert_eq!(fp_data.len(), 128 * 2);
+            let fp_data = fp.get_fingerprint_in_batch(&smiles_vec);
+            assert_eq!(fp_data.len(), 128 * 2);
         }
     }
 

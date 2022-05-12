@@ -1,7 +1,7 @@
 #include <sstream>
 #include <vector>
-#include "finger2.h"
-#include "finger3.h"
+// #include "finger2.h"
+// #include "finger3.h"
 #include "wrapper.h"
 
 /*
@@ -71,14 +71,25 @@ double OBMol_get_mol_wt(const std::unique_ptr<OBMol> & pMol) { return pMol->GetM
 //     return std::unique_ptr<OBFingerprint>(pFp);
 // }
 
+// class fingerprint2;
+// extern fingerprint2 thefingerprint2;
+// class PatternFP;
+// extern PatternFP FP3PatternFP;
+// extern PatternFP FP4PatternFP;
+
 OBFingerprint* OBFingerprint_get_ptr(const std::string &fp_name) {
     if (fp_name == "FP2") {
         // return new fingerprint2("FP2_temp", false);
-        return new OBFingerprint::
+        // return dynamic_cast<OBFingerprint*>(&thefingerprint2);
+        return OBFingerprint::FindFingerprint("FP2");
     } else if (fp_name == "FP3") {
-        return new PatternFP("FP3_temp");
+        // return new PatternFP("FP3_temp");
+        // return dynamic_cast<OBFingerprint*>(&FP3PatternFP);
+        return OBFingerprint::FindFingerprint("FP3");
     } else if (fp_name == "FP4") {
-        return new PatternFP("FP4_temp", "SMARTS_InteLigand.txt");
+        // return new PatternFP("FP4_temp", "SMARTS_InteLigand.txt");
+        // return dynamic_cast<OBFingerprint*>(&FP4PatternFP);
+        return OBFingerprint::FindFingerprint("FP4");
     } else {
         return nullptr; 
     }
@@ -111,7 +122,7 @@ std::unique_ptr<FPData> OBFingerprint_get_fingerprint(const std::string &fp_name
         fps.resize(0);
     }
 
-    if (pFP) free(pFP);
+    // if (pFP) free(pFP);
 
     return std::make_unique<FPData>(std::move(fps));
 }
@@ -142,7 +153,7 @@ std::unique_ptr<FPData> OBFingerprint_get_fingerprint_in_batch(const std::string
         }
     }
 
-    if (pFP) free(pFP);
+    // if (pFP) free(pFP);
     if (pMol) free(pMol);
 
     return std::make_unique<FPData>(std::move(results));
