@@ -1,6 +1,6 @@
 /**********************************************************************
-finger3.h: a copy from openbabel finger3.cpp 
-remove global variables: FP3PatternFP and FP4PatternFP
+finger3.cpp: a copy from openbabel finger3.cpp
+add more instances for multithreading 
 ***********************************************************************/
 
 #include <openbabel/babelconfig.h>
@@ -292,6 +292,20 @@ public:
 
 
 }; //class PatternFP
+
+//***********************************************
+//Make a global instance
+PatternFP FP3PatternFP("FP3");
+PatternFP FP4PatternFP("FP4", "SMARTS_InteLigand.txt");
+PatternFP FP3PatternFP_thread_0("FP3_thread_0");
+PatternFP FP3PatternFP_thread_1("FP3_thread_1");
+PatternFP FP3PatternFP_thread_2("FP3_thread_2");
+PatternFP FP3PatternFP_thread_3("FP3_thread_3");
+PatternFP FP4PatternFP_thread_0("FP4_thread_0", "SMARTS_InteLigand.txt");
+PatternFP FP4PatternFP_thread_1("FP4_thread_1", "SMARTS_InteLigand.txt");
+PatternFP FP4PatternFP_thread_2("FP4_thread_2", "SMARTS_InteLigand.txt");
+PatternFP FP4PatternFP_thread_3("FP4_thread_3", "SMARTS_InteLigand.txt");
+//***********************************************
 
 /*! \class PatternFP
 A bit is set when there is a match to one of a list

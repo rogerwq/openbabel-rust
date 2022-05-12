@@ -15,4 +15,9 @@ Refer to test cases for how to use.
 
 ## References
 - Code structure: [libcurl bindings for Rust](https://github.com/alexcrichton/curl-rust)
+
+### OpenBabel 
 - Openbabel [documentation](http://openbabel.org/wiki/Main_Page)
+- [Substructure Searching](http://openbabel.org/dev-api/group__substructure.shtml)
+- [OBSmartsPattern Class Reference](http://openbabel.org/dev-api/classOpenBabel_1_1OBSmartsPattern.shtml)
+- [Multilevel Neighborhoods of Atoms (MNA) descriptors](http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html#multilevel-neighborhoods-of-atoms-mna)
