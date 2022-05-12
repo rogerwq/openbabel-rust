@@ -1,5 +1,7 @@
 #include <sstream>
 #include <vector>
+// #include "finger2.h"
+// #include "finger3.h"
 #include "wrapper.h"
 
 /*
@@ -11,6 +13,13 @@ References:
 */
 
 namespace OpenBabel {
+
+// For Debug Purpose
+void print_global_instances() {
+    std::cout << "theSMIFormat: " << &theSMIFormat << std::endl;
+}
+
+// Debug - End 
 
 // OBConversion 
 
@@ -62,14 +71,92 @@ double OBMol_get_mol_wt(const std::unique_ptr<OBMol> & pMol) { return pMol->GetM
 //     return std::unique_ptr<OBFingerprint>(pFp);
 // }
 
-std::unique_ptr<std::vector<unsigned int>> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
-    std::vector<unsigned int> fps;
-    OBFingerprint* pFp = OBFingerprint::FindFingerprint(fp_name.c_str());
-    if (!pFp->GetFingerprint(pMol.get(), fps, nbits)) {
+// class fingerprint2;
+// extern fingerprint2 thefingerprint2;
+// class PatternFP;
+// extern PatternFP FP3PatternFP;
+// extern PatternFP FP4PatternFP;
+
+OBFingerprint* OBFingerprint_get_ptr(const std::string &fp_name) {
+    if (fp_name == "FP2") {
+        // return new fingerprint2("FP2_temp", false);
+        // return dynamic_cast<OBFingerprint*>(&thefingerprint2);
+        return OBFingerprint::FindFingerprint("FP2");
+    } else if (fp_name == "FP3") {
+        // return new PatternFP("FP3_temp");
+        // return dynamic_cast<OBFingerprint*>(&FP3PatternFP);
+        return OBFingerprint::FindFingerprint("FP3");
+    } else if (fp_name == "FP4") {
+        // return new PatternFP("FP4_temp", "SMARTS_InteLigand.txt");
+        // return dynamic_cast<OBFingerprint*>(&FP4PatternFP);
+        return OBFingerprint::FindFingerprint("FP4");
+    } else {
+        return nullptr; 
+    }
+}
+
+// std::unique_ptr<std::vector<unsigned int>> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
+//     /*
+//         OpenBabel creates global variables for fingerprints and uses a pre-loaded plugin system to manage different types of fingerprint.
+//         Memory error "pointer being freed was not allocated" occurs randomly. The root cause has not been confirmed.
+//         Debug method:
+//             1. lldb
+//             2. create target "..."
+//             3. b malloc_error_break
+//             4. r
+//     */
+//     std::vector<unsigned int> fps;
+//     OBFingerprint* pFp = OBFingerprint::FindFingerprint(fp_name.c_str());
+//     if (!pFp->GetFingerprint(pMol.get(), fps, nbits)) {
+//         fps.resize(0);
+//     }
+
+//     return std::make_unique<std::vector<unsigned int>>(std::move(fps));
+// }
+
+std::unique_ptr<FPData> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
+    FPData fps;
+    OBFingerprint* pFP = OBFingerprint_get_ptr(fp_name);
+
+    if (pFP && !pFP->GetFingerprint(pMol.get(), fps, nbits)) {
         fps.resize(0);
     }
 
-    return std::make_unique<std::vector<unsigned int>>(std::move(fps));
+    // if (pFP) free(pFP);
+
+    return std::make_unique<FPData>(std::move(fps));
+}
+
+std::unique_ptr<FPData> OBFingerprint_get_fingerprint_in_batch(const std::string &fp_name, const rust::Vec<rust::String> & smiles_vec, u_int32_t nbits) {
+    FPData fps, results;
+    results.resize(0);
+
+    OBFingerprint* pFP = OBFingerprint_get_ptr(fp_name);
+    OBConversion conv;
+    OBMol* pMol = new OBMol();
+
+    if (pFP && conv.SetInFormat("smi")) {
+        for (std::size_t i = 0; i < smiles_vec.size(); ++i) {
+            fps.resize(0);
+
+            // SetInStream(new stringstream(input), true);
+            // Read(pOb);
+
+            if (conv.ReadString(pMol, std::string(smiles_vec[i]))) {
+                //if(!pFP->GetFingerprint(pMol, fps, nbits)) {
+                     fps.resize(nbits / 32);
+                // }
+            } else { // If the conversion from SMILES to mol is not successful, set the fingerprint data to ZERO.
+                fps.resize(nbits / 32);
+            }
+            results.insert(results.end(), std::make_move_iterator(fps.begin()), std::make_move_iterator(fps.end()));
+        }
+    }
+
+    // if (pFP) free(pFP);
+    if (pMol) free(pMol);
+
+    return std::make_unique<FPData>(std::move(results));
 }
 
 // OBFingerprint - End
