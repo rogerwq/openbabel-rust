@@ -1,8 +1,7 @@
 #include <sstream>
 #include <vector>
-// #include "finger2.h"
-// #include "finger3.h"
 #include "wrapper.h"
+#include "smilesformat.h"
 
 /*
 References:
@@ -24,11 +23,19 @@ void print_global_instances() {
 // OBConversion 
 
 std::unique_ptr<OBMol> OBConversion_smi_to_mol(const std::string &smiles) {
-    std::unique_ptr<OBMol> pMol(new OBMol());
-    std::stringstream ss(smiles);
-    OBConversion conv(&ss);
-    if(conv.SetInFormat("smi") && conv.Read(pMol.get())) {
-        return pMol;
+    // std::unique_ptr<OBMol> pMol(new OBMol());
+    // std::stringstream ss(smiles);
+    // OBConversion conv(&ss);
+    // if(conv.SetInFormat("smi") && conv.Read(pMol.get())) {
+    //     return pMol;
+    // } else {
+    //     return std::unique_ptr<OBMol>(nullptr);
+    // }
+
+    OBSmilesParser ob_sp = OBSmilesParser();
+    OBMol mol = OBMol();
+    if (ob_sp.SmiToMol(mol, smiles)) {
+        return std::make_unique<OBMol>(std::move(mol));
     } else {
         return std::unique_ptr<OBMol>(nullptr);
     }
@@ -116,7 +123,7 @@ OBFingerprint* OBFingerprint_get_ptr(const std::string &fp_name) {
 
 std::unique_ptr<FPData> OBFingerprint_get_fingerprint(const std::string &fp_name, const std::unique_ptr<OBMol> & pMol, u_int32_t nbits) {
     FPData fps;
-    OBFingerprint* pFP = OBFingerprint_get_ptr(fp_name);
+    OBFingerprint* pFP = OBFingerprint::FindFingerprint(fp_name.c_str());
 
     if (pFP && !pFP->GetFingerprint(pMol.get(), fps, nbits)) {
         fps.resize(0);
@@ -131,30 +138,39 @@ std::unique_ptr<FPData> OBFingerprint_get_fingerprint_in_batch(const std::string
     FPData fps, results;
     results.resize(0);
 
-    OBFingerprint* pFP = OBFingerprint_get_ptr(fp_name);
-    OBConversion conv;
-    OBMol* pMol = new OBMol();
+    OBFingerprint* pFP = OBFingerprint::FindFingerprint(fp_name.c_str());
 
-    if (pFP && conv.SetInFormat("smi")) {
-        for (std::size_t i = 0; i < smiles_vec.size(); ++i) {
-            fps.resize(0);
+    // OBConversion conv;
+    // OBMol* pMol = new OBMol();
+    // if (pFP && conv.SetInFormat("smi")) {
+    //     for (std::size_t i = 0; i < smiles_vec.size(); ++i) {
+    //         fps.resize(0);
 
-            // SetInStream(new stringstream(input), true);
-            // Read(pOb);
+    //         if (conv.ReadString(pMol, std::string(smiles_vec[i]))) {
+    //             if(!pFP->GetFingerprint(pMol, fps, nbits)) {
+    //                  fps.resize(nbits / 32);
+    //             }
+    //         } else { // If the conversion from SMILES to mol is not successful, set the fingerprint data to ZERO.
+    //             fps.resize(nbits / 32);
+    //         }
+    //         results.insert(results.end(), std::make_move_iterator(fps.begin()), std::make_move_iterator(fps.end()));
+    //     }
+    // }
+    // if (pMol) free(pMol);
 
-            if (conv.ReadString(pMol, std::string(smiles_vec[i]))) {
-                //if(!pFP->GetFingerprint(pMol, fps, nbits)) {
-                     fps.resize(nbits / 32);
-                // }
+    OBSmilesParser ob_sp = OBSmilesParser();
+    OBMol mol = OBMol();
+    for (std::size_t i = 0; i < smiles_vec.size(); ++i) {
+        fps.resize(0);
+        if (ob_sp.SmiToMol(mol, std::string(smiles_vec[i]))) {
+            if (!pFP->GetFingerprint(&mol, fps, nbits)) {
+                fps.resize(nbits / 32);
             } else { // If the conversion from SMILES to mol is not successful, set the fingerprint data to ZERO.
                 fps.resize(nbits / 32);
             }
             results.insert(results.end(), std::make_move_iterator(fps.begin()), std::make_move_iterator(fps.end()));
-        }
+        } 
     }
-
-    // if (pFP) free(pFP);
-    if (pMol) free(pMol);
 
     return std::make_unique<FPData>(std::move(results));
 }

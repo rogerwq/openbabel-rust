@@ -1,6 +1,18 @@
 /**********************************************************************
-finger3.h: a copy from openbabel finger3.cpp 
-remove global variables: FP3PatternFP and FP4PatternFP
+finger3.cpp: Fingerprints based on list of SMARTS patterns
+Copyright (C) 2005 Chris Morley
+
+This file is part of the Open Babel project.
+For more information, see <http://openbabel.org/>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 ***********************************************************************/
 
 #include <openbabel/babelconfig.h>
@@ -292,6 +304,20 @@ public:
 
 
 }; //class PatternFP
+
+//***********************************************
+//Make a global instance
+PatternFP FP3PatternFP("FP3");
+PatternFP FP3PatternFP_thread_0("FP3_thread_0");
+PatternFP FP3PatternFP_thread_1("FP3_thread_1");
+PatternFP FP3PatternFP_thread_2("FP3_thread_2");
+PatternFP FP3PatternFP_thread_3("FP3_thread_3");
+PatternFP FP4PatternFP("FP4", "SMARTS_InteLigand.txt");
+PatternFP FP4PatternFP_thread_0("FP4_thread_0", "SMARTS_InteLigand.txt");
+PatternFP FP4PatternFP_thread_1("FP4_thread_1", "SMARTS_InteLigand.txt");
+PatternFP FP4PatternFP_thread_2("FP4_thread_2", "SMARTS_InteLigand.txt");
+PatternFP FP4PatternFP_thread_3("FP4_thread_3", "SMARTS_InteLigand.txt");
+//***********************************************
 
 /*! \class PatternFP
 A bit is set when there is a match to one of a list

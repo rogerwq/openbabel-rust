@@ -14,8 +14,8 @@ pub enum FingerprintOpenBabelKind {
 }
 
 impl FingerprintOpenBabelKind {
-    fn as_str(&self) -> &'static str {
-        match self {
+    fn as_str(&self, thread_id: u32) -> String {
+        let fp_name = match self {
             FingerprintOpenBabelKind::FP2 { nbits: _ } => "FP2",
             FingerprintOpenBabelKind::FP3 { nbits: _ } => "FP3",
             FingerprintOpenBabelKind::FP4 { nbits: _ } => "FP4",
@@ -25,7 +25,8 @@ impl FingerprintOpenBabelKind {
             FingerprintOpenBabelKind::ECFP6 { nbits: _ } => "ECFP6",
             FingerprintOpenBabelKind::ECFP8 { nbits: _ } => "ECFP8",
             FingerprintOpenBabelKind::ECFP10 { nbits: _ } => "ECFP10",
-        }
+        };
+        format!("{}_thread_{}", fp_name, thread_id)
     }
 
     fn get_nbits(&self) -> &u32 {
@@ -63,13 +64,13 @@ impl Fingerprint {
     //     cxx::let_cxx_string!(name = &self.name);
     //     ob::OBFingerprint_get_fingerprint(&name, &mol.ob_mol, nbits) // If nbits <=0, nbits = 4096
     // }
-    pub fn get_fingerprint(&self, mol: &molecule::Molecule) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
-        cxx::let_cxx_string!(name = &self.kind.as_str());
+    pub fn get_fingerprint(&self, mol: &molecule::Molecule, thread_id: u32) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
+        cxx::let_cxx_string!(name = &self.kind.as_str(thread_id));
         ob::OBFingerprint_get_fingerprint(&name, &mol.ob_mol, *self.kind.get_nbits()) // If nbits <=0, nbits = 4096
     }
 
-    pub fn get_fingerprint_in_batch(&self, smiles_vec: &Vec<String>) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
-        cxx::let_cxx_string!(name = &self.kind.as_str());
+    pub fn get_fingerprint_in_batch(&self, smiles_vec: &Vec<String>, thread_id: u32) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
+        cxx::let_cxx_string!(name = &self.kind.as_str(thread_id));
         ob::OBFingerprint_get_fingerprint_in_batch(&name, smiles_vec, *self.kind.get_nbits())
     }
 }
@@ -96,7 +97,7 @@ mod test_mod_fingerprint {
             Fingerprint::new(FingerprintOpenBabelKind::FP3 { nbits: 4096 }),
             Fingerprint::new(FingerprintOpenBabelKind::FP4 { nbits: 4096 })
         ].iter() {
-            let fp_data = fp.get_fingerprint(&mol);
+            let fp_data = fp.get_fingerprint(&mol, 0);
             assert_eq!(fp_data.len(), 128);
         }
     }
@@ -112,7 +113,7 @@ mod test_mod_fingerprint {
                 String::from("CCNCC"),
                 String::from("c1ccccc1")
             ];
-            let fp_data = fp.get_fingerprint_in_batch(&smiles_vec);
+            let fp_data = fp.get_fingerprint_in_batch(&smiles_vec, 1);
             assert_eq!(fp_data.len(), 128 * 2);
         }
     }
