@@ -48,7 +48,7 @@ fn main() {
         }
     }
 
-    // Copy data directory
+    // copy data directory
     let data_ob = dst.join("data").join(&version);
     if !data_ob.exists() {
         std::fs::create_dir_all(&data_ob).unwrap();
@@ -127,11 +127,19 @@ fn main() {
         .file("openbabel/src/stereo/tetraplanar.cpp")
         .file("openbabel/src/math/vector3.cpp")
         .file("openbabel/src/math/matrix3x3.cpp")
-        .file("openbabel/src/formats/smilesformat.cpp")
-        .file("openbabel/src/fingerprints/fingerecfp.cpp")
+        //.file("openbabel/src/formats/smilesformat.cpp")
+        .file("src/formats/smilesformat.cpp")
+        // .file("openbabel/src/fingerprints/finger2.cpp")
+        // .file("openbabel/src/fingerprints/finger3.cpp")
+        // .file("openbabel/src/fingerprints/fingerecfp.cpp")
+        .file("src/fingerprints/finger2.cpp")
+        .file("src/fingerprints/finger3.cpp")
+        .file("src/fingerprints/fingerecfp.cpp")
         .file("src/wrapper.cpp")
         .include(include)
         .include(incl_src)
+        .include(incl_src.join("formats"))
+        .include("openbabel/src/formats") // smilesvalence.h
         .include(incl_ob_repo)
         .flag_if_supported("-std=c++14")
         .flag("-Wno-unused-parameter")

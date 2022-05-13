@@ -4,7 +4,9 @@ pub mod ob {
         include!("openbabel-sys/src/wrapper.h");
         type OBMol;
         type OBSmartsPattern;
-        type OBFingerprint;
+
+        // Debug
+        fn print_global_instances();
 
         // OBConversion
         fn OBConversion_smi_to_mol(smiles: &CxxString) -> UniquePtr<OBMol>;
@@ -16,8 +18,8 @@ pub mod ob {
         fn OBMol_get_mol_wt(mol: &UniquePtr<OBMol>) -> f64;
 
         // OBFingerprint
-        // fn OBFingerprint_find(fp_name: &CxxString) -> UniquePtr<OBFingerprint>;
-        fn OBFingerprint_get_fingerprint(fp_name: &CxxString, mol: &UniquePtr<OBMol>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
+        fn OBFingerprint_get_fingerprint(fp_thread_name: &CxxString, mol: &UniquePtr<OBMol>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
+        fn OBFingerprint_get_fingerprint_in_batch(fp_thread_name: &CxxString, smiles_vec: &Vec<String>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
 
         // OBSmartsPattern
         fn OBSmartsPattern_new(smarts: &CxxString) -> UniquePtr<OBSmartsPattern>;
@@ -25,5 +27,21 @@ pub mod ob {
         fn OBSmartsPattern_num_bonds(pattern: &UniquePtr<OBSmartsPattern>) -> u32;
         fn OBSmartsPattern_num_matches(pattern: &UniquePtr<OBSmartsPattern>) -> u32;
         fn OBSmartsPattern_match(pattern: &UniquePtr<OBSmartsPattern>, mol: &UniquePtr<OBMol>) -> UniquePtr<CxxVector<i32>>;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_fingerprint_fp() {
+        cxx::let_cxx_string!(smiles = "c1ccccc1");
+        let mol = ob::OBConversion_smi_to_mol(&smiles);
+        for fp_name in vec!["FP2", "FP3", "FP4"] {
+            cxx::let_cxx_string!(name = fp_name);
+            let p_data = ob::OBFingerprint_get_fingerprint(&name, &mol, 4096);
+            assert_eq!(p_data.as_ref().unwrap().len(), 128);
+        }
     }
 }

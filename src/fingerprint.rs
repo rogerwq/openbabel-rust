@@ -1,18 +1,69 @@
 use openbabel_sys::ob;
 use super::molecule;
 
+pub enum FingerprintOpenBabelKind {
+    FP2 { nbits: u32 },
+    FP3 { nbits: u32 },
+    FP4 { nbits: u32 },
+    ECFP0 { nbits: u32 },
+    ECFP2 { nbits: u32 },
+    ECFP4 { nbits: u32 },
+    ECFP6 { nbits: u32 },
+    ECFP8 { nbits: u32 },
+    ECFP10 { nbits: u32 }
+}
+
+impl FingerprintOpenBabelKind {
+    fn as_str(&self, thread_id: u32) -> String {
+        let fp_name = match self {
+            FingerprintOpenBabelKind::FP2 { nbits: _ } => "FP2",
+            FingerprintOpenBabelKind::FP3 { nbits: _ } => "FP3",
+            FingerprintOpenBabelKind::FP4 { nbits: _ } => "FP4",
+            FingerprintOpenBabelKind::ECFP0 { nbits: _ } => "ECFP0",
+            FingerprintOpenBabelKind::ECFP2 { nbits: _ } => "ECFP2",
+            FingerprintOpenBabelKind::ECFP4 { nbits: _ } => "ECFP4",
+            FingerprintOpenBabelKind::ECFP6 { nbits: _ } => "ECFP6",
+            FingerprintOpenBabelKind::ECFP8 { nbits: _ } => "ECFP8",
+            FingerprintOpenBabelKind::ECFP10 { nbits: _ } => "ECFP10",
+        };
+        format!("{}_thread_{}", fp_name, thread_id)
+    }
+
+    fn get_nbits(&self) -> &u32 {
+        match self {
+            FingerprintOpenBabelKind::FP2 { nbits } => nbits,
+            FingerprintOpenBabelKind::FP3 { nbits } => nbits,
+            FingerprintOpenBabelKind::FP4 { nbits } => nbits,
+            FingerprintOpenBabelKind::ECFP0 { nbits } => nbits,
+            FingerprintOpenBabelKind::ECFP2 { nbits } => nbits,
+            FingerprintOpenBabelKind::ECFP4 { nbits } => nbits,
+            FingerprintOpenBabelKind::ECFP6 { nbits } => nbits,
+            FingerprintOpenBabelKind::ECFP8 { nbits } => nbits,
+            FingerprintOpenBabelKind::ECFP10 { nbits } => nbits,
+        }
+    }
+}
+
 pub struct Fingerprint {
-    name: String
+    kind: FingerprintOpenBabelKind
 }
 
 impl Fingerprint {
-    pub fn new(name_fp: &str) -> Self {
-        Self { name: name_fp.to_string() }
+    /// Fingerprint FP3 & FP4 require data files of patterns.txt and SMARTS_InteLigand.txt 
+    /// If "Open Babel Error in Read PatternFile" is encountered,
+    /// setting BABEL_DATADIR to where those files are located will solve the issue.
+    pub fn new(kind: FingerprintOpenBabelKind) -> Self {
+        Self { kind }
     }
 
-    pub fn get_fingerprint(&self, mol: &molecule::Molecule, nbits: u32) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
-        cxx::let_cxx_string!(name = &self.name);
-        ob::OBFingerprint_get_fingerprint(&name, &mol.ob_mol, nbits) // If nbits <=0, nbits = 4096
+    pub fn get_fingerprint(&self, mol: &molecule::Molecule, thread_id: u32) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
+        cxx::let_cxx_string!(name = &self.kind.as_str(thread_id));
+        ob::OBFingerprint_get_fingerprint(&name, &mol.ob_mol, *self.kind.get_nbits()) // If nbits <=0, nbits = 4096
+    }
+
+    pub fn get_fingerprint_in_batch(&self, smiles_vec: &Vec<String>, thread_id: u32) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
+        cxx::let_cxx_string!(name = &self.kind.as_str(thread_id));
+        ob::OBFingerprint_get_fingerprint_in_batch(&name, smiles_vec, *self.kind.get_nbits())
     }
 }
 
@@ -21,11 +72,67 @@ mod test_mod_fingerprint {
     use super::*;
 
     #[test]
-    fn test_fingerprint_ecfp() {
-        let fp = Fingerprint::new("ECFP4"); // ECFP0, ECFP2, ECFP4, ECFP8, ECFP10 are avaialble
+    fn test_fingerprint_fp() {
         let mol = molecule::Molecule::new_from_smiles("CCNCC");
-        let fp_data = fp.get_fingerprint(&mol, 4096);
-        assert_eq!(fp_data.len(), 128);
+        for fp in vec![
+            Fingerprint::new(FingerprintOpenBabelKind::FP2 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::FP3 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::FP4 { nbits: 4096 })
+        ].iter() {
+            let fp_data = fp.get_fingerprint(&mol, 0);
+            assert_eq!(fp_data.len(), 128);
+        }
+    }
+
+    #[test]
+    fn test_fingerprint_fp_in_batch() {
+        for fp in vec![
+            Fingerprint::new(FingerprintOpenBabelKind::FP2 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::FP3 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::FP4 { nbits: 4096 })
+        ].iter() {
+            let smiles_vec = vec![
+                String::from("CCNCC"),
+                String::from("c1ccccc1")
+            ];
+            let fp_data = fp.get_fingerprint_in_batch(&smiles_vec, 1);
+            assert_eq!(fp_data.len(), 128 * 2);
+        }
+    }
+
+    #[test]
+    fn test_fingerprint_ecfp() {
+        let mol = molecule::Molecule::new_from_smiles("CCNCC");
+        for fp in vec![
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP0 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP2 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP4 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP6 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP8 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP10 { nbits: 4096 }),
+        ].iter() {
+            let fp_data = fp.get_fingerprint(&mol, 2);
+            assert_eq!(fp_data.len(), 128);
+        }
+    }
+
+    #[test]
+    fn test_fingerprint_ecfp_in_batch() {
+        for fp in vec![
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP0 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP2 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP4 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP6 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP8 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP10 { nbits: 4096 }),
+        ].iter() {
+            let smiles_vec = vec![
+                String::from("CCNCC"),
+                String::from("c1ccccc1")
+            ];
+            let fp_data = fp.get_fingerprint_in_batch(&smiles_vec, 1);
+            assert_eq!(fp_data.len(), 128 * 2);
+        }
     }
 }
 
