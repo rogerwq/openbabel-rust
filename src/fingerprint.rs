@@ -71,16 +71,6 @@ impl Fingerprint {
 mod test_mod_fingerprint {
     use super::*;
 
-    // #[test]
-    // fn test_fingerprint_ecfp() {
-    //     for s in vec!["ECFP0", "ECFP2", "ECFP4", "ECFP6", "ECFP8", "ECFP10"] {
-    //         let fp = Fingerprint::new(s); 
-    //         let mol = molecule::Molecule::new_from_smiles("CCNCC");
-    //         let fp_data = fp.get_fingerprint(&mol, 4096);
-    //         assert_eq!(fp_data.len(), 128);
-    //     }
-    // }
-
     #[test]
     fn test_fingerprint_fp() {
         let mol = molecule::Molecule::new_from_smiles("CCNCC");
@@ -110,19 +100,39 @@ mod test_mod_fingerprint {
         }
     }
 
-    // #[test]
-    // fn test_fingerprint_multiple() {
-    //     let fp = Fingerprint::new("FP2");
-    //     let mols: Vec<molecule::Molecule> = vec!["CCCC", "CCCN"]
-    //         .iter()
-    //         .map(|smiles| molecule::Molecule::new_from_smiles(smiles))
-    //         .collect();
-    //     let fpds: Vec<cxx::UniquePtr<cxx::CxxVector<u32>>> = mols
-    //         .iter()
-    //         .map(|mol| fp.get_fingerprint(mol, 4096))
-    //         .collect(); 
-    //     assert_eq!(fpds[0].len(), 128);
-    //     assert_eq!(fpds[1].len(), 128);
-    // }
+    #[test]
+    fn test_fingerprint_ecfp() {
+        let mol = molecule::Molecule::new_from_smiles("CCNCC");
+        for fp in vec![
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP0 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP2 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP4 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP6 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP8 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP10 { nbits: 4096 }),
+        ].iter() {
+            let fp_data = fp.get_fingerprint(&mol, 2);
+            assert_eq!(fp_data.len(), 128);
+        }
+    }
+
+    #[test]
+    fn test_fingerprint_ecfp_in_batch() {
+        for fp in vec![
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP0 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP2 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP4 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP6 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP8 { nbits: 4096 }),
+            Fingerprint::new(FingerprintOpenBabelKind::ECFP10 { nbits: 4096 }),
+        ].iter() {
+            let smiles_vec = vec![
+                String::from("CCNCC"),
+                String::from("c1ccccc1")
+            ];
+            let fp_data = fp.get_fingerprint_in_batch(&smiles_vec, 1);
+            assert_eq!(fp_data.len(), 128 * 2);
+        }
+    }
 }
 
