@@ -1,36 +1,36 @@
 #include <sstream>
 #include <vector>
-#include <thread>
 #include <openbabel/fingerprint.h>
+#include <openbabel/oberror.h>
 #include "wrapper.h"
+#include "smilesformat.h"
 
 namespace OpenBabel {
 
 // For Debug Purpose
 
-void print_global_instances() {
-    // std::cout << "theSMIFormat: " << &theSMIFormat << std::endl;
-    std::cout << "FP2: " << OBFingerprint::FindFingerprint("FP2") << std::endl;
-    std::cout << "FP3: " << OBFingerprint::FindFingerprint("FP3") << std::endl;
-    std::cout << "FP4: " << OBFingerprint::FindFingerprint("FP4") << std::endl;
-    std::cout << "FP2 thread 0: " << OBFingerprint::FindFingerprint("FP2_thread_0") << std::endl;
-    std::cout << "FP3 thread 0: " << OBFingerprint::FindFingerprint("FP3_thread_0") << std::endl;
-    std::cout << "FP4 thread 0: " << OBFingerprint::FindFingerprint("FP4_thread_0") << std::endl;
-    static int a = 0;
-    std::cout << "staic a: " << &a << std::endl;
-    // std::cout << "Class OBFingerprint: " << &(OBFingerprint::Map) << std::endl;
-}
+// void print_global_instances() {
+//     // std::cout << "theSMIFormat: " << &theSMIFormat << std::endl;
+//     std::cout << "FP2: " << OBFingerprint::FindFingerprint("FP2") << std::endl;
+//     std::cout << "FP3: " << OBFingerprint::FindFingerprint("FP3") << std::endl;
+//     std::cout << "FP4: " << OBFingerprint::FindFingerprint("FP4") << std::endl;
+//     std::cout << "FP2 thread 0: " << OBFingerprint::FindFingerprint("FP2_thread_0") << std::endl;
+//     std::cout << "FP3 thread 0: " << OBFingerprint::FindFingerprint("FP3_thread_0") << std::endl;
+//     std::cout << "FP4 thread 0: " << OBFingerprint::FindFingerprint("FP4_thread_0") << std::endl;
+//     static int a = 0;
+//     std::cout << "staic a: " << &a << std::endl;
+//     std::cout << "Class OBFingerprint: " << &(OBFingerprint::Map) << std::endl;
+// }
 
 // Debug - End
 
 // OBConversion 
 
 std::unique_ptr<OBMol> OBConversion_smi_to_mol(const std::string &smiles) {
-    std::unique_ptr<OBMol> pMol(new OBMol());
-    std::stringstream ss(smiles);
-    OBConversion conv(&ss);
-    if(conv.SetInFormat("smi") && conv.Read(pMol.get())) {
-        return pMol;
+    OBSmilesParser ob_sp = OBSmilesParser();
+    OBMol mol = OBMol();
+    if (ob_sp.SmiToMol(mol, smiles)) {
+        return std::make_unique<OBMol>(std::move(mol));
     } else {
         return std::unique_ptr<OBMol>(nullptr);
     }
@@ -54,8 +54,18 @@ std::unique_ptr<FPData> OBFingerprint_get_fingerprint(const std::string &fp_thre
     FPData fps;
     OBFingerprint* pFP = OBFingerprint::FindFingerprint(fp_thread_name.c_str());
 
-    if (!pFP || !pFP->GetFingerprint(pMol.get(), fps, nbits)) {
-        fps.resize(0);
+    stringstream errorMsg;
+    if (!pFP) {
+        errorMsg << "Cannot find fingerprint " << fp_thread_name << std::endl;
+        obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
+        fps.resize(nbits / 32);
+        std::fill(fps.begin(), fps.end(), 0);
+    } else {
+        if(!pFP->GetFingerprint(pMol.get(), fps, nbits)) {
+            errorMsg << "Error on generating fingerprint " << fp_thread_name << std::endl;
+            obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
+            std::fill(fps.begin(), fps.end(), 0);
+        }
     }
 
     return std::make_unique<FPData>(std::move(fps));
@@ -64,28 +74,33 @@ std::unique_ptr<FPData> OBFingerprint_get_fingerprint(const std::string &fp_thre
 std::unique_ptr<FPData> OBFingerprint_get_fingerprint_in_batch(const std::string &fp_thread_name, const rust::Vec<rust::String> & smiles_vec, u_int32_t nbits) {
     FPData fps, results;
     results.resize(0);
+    stringstream errorMsg;
 
     OBFingerprint* pFP = OBFingerprint::FindFingerprint(fp_thread_name.c_str());
-    OBConversion conv;
-    OBMol* pMol = new OBMol();
-    u_int32_t fp_bits = (nbits < pFP->Getbitsperint()) ? nbits : pFP->Getbitsperint();
+    if (!pFP) {
+        errorMsg << "Cannot find fingerprint " << fp_thread_name << std::endl;
+        obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
+        return std::make_unique<FPData>(std::move(results));
+    } 
 
-    if (pFP && conv.SetInFormat("smi")) {
-        for (std::size_t i = 0; i < smiles_vec.size(); ++i) {
-            fps.resize(0);
-
-            if (conv.ReadString(pMol, std::string(smiles_vec[i]))) {
-                if(!pFP->GetFingerprint(pMol, fps, nbits)) {
-                     fps.resize(fp_bits); // error of generating fingerprint
-                }
-            } else { // If the conversion from SMILES to mol is not successful, set the fingerprint data to ZERO.
-                fps.resize(fp_bits);
-            }
-            results.insert(results.end(), std::make_move_iterator(fps.begin()), std::make_move_iterator(fps.end()));
+    OBSmilesParser ob_sp = OBSmilesParser();
+    OBMol mol = OBMol();
+    for (std::size_t i = 0; i < smiles_vec.size(); ++i) {
+        fps.resize(0);
+        if (ob_sp.SmiToMol(mol, std::string(smiles_vec[i]))) {
+            if (!pFP->GetFingerprint(&mol, fps, nbits)) {
+                errorMsg << "Error on generating fingerprint " << fp_thread_name << std::endl;
+                obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
+                std::fill(fps.begin(), fps.end(), 0);
+            } 
+        } else { 
+            errorMsg << "Error on SMILES parsing " << smiles_vec[i] << std::endl;
+            obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
+            fps.resize(nbits / 32);
+            std::fill(fps.begin(), fps.end(), 0);
         }
+        results.insert(results.end(), std::make_move_iterator(fps.begin()), std::make_move_iterator(fps.end()));
     }
-
-    if (pMol) free(pMol);
 
     return std::make_unique<FPData>(std::move(results));
 }

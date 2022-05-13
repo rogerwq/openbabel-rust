@@ -45,7 +45,6 @@ impl FingerprintOpenBabelKind {
 }
 
 pub struct Fingerprint {
-    // name: String
     kind: FingerprintOpenBabelKind
 }
 
@@ -53,17 +52,10 @@ impl Fingerprint {
     /// Fingerprint FP3 & FP4 require data files of patterns.txt and SMARTS_InteLigand.txt 
     /// If "Open Babel Error in Read PatternFile" is encountered,
     /// setting BABEL_DATADIR to where those files are located will solve the issue.
-    // pub fn new(name_fp: &str) -> Self {
-    //     Self { name: name_fp.to_string() }
-    // }
     pub fn new(kind: FingerprintOpenBabelKind) -> Self {
         Self { kind }
     }
 
-    // pub fn get_fingerprint(&self, mol: &molecule::Molecule, nbits: u32) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
-    //     cxx::let_cxx_string!(name = &self.name);
-    //     ob::OBFingerprint_get_fingerprint(&name, &mol.ob_mol, nbits) // If nbits <=0, nbits = 4096
-    // }
     pub fn get_fingerprint(&self, mol: &molecule::Molecule, thread_id: u32) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
         cxx::let_cxx_string!(name = &self.kind.as_str(thread_id));
         ob::OBFingerprint_get_fingerprint(&name, &mol.ob_mol, *self.kind.get_nbits()) // If nbits <=0, nbits = 4096
@@ -91,7 +83,6 @@ mod test_mod_fingerprint {
 
     #[test]
     fn test_fingerprint_fp() {
-        ob::print_global_instances();
         let mol = molecule::Molecule::new_from_smiles("CCNCC");
         for fp in vec![
             Fingerprint::new(FingerprintOpenBabelKind::FP2 { nbits: 4096 }),

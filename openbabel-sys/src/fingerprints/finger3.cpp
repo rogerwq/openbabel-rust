@@ -1,6 +1,18 @@
 /**********************************************************************
-finger3.cpp: a copy from openbabel finger3.cpp
-add more instances for multithreading 
+finger3.cpp: Fingerprints based on list of SMARTS patterns
+Copyright (C) 2005 Chris Morley
+
+This file is part of the Open Babel project.
+For more information, see <http://openbabel.org/>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 ***********************************************************************/
 
 #include <openbabel/babelconfig.h>
@@ -296,11 +308,11 @@ public:
 //***********************************************
 //Make a global instance
 PatternFP FP3PatternFP("FP3");
-PatternFP FP4PatternFP("FP4", "SMARTS_InteLigand.txt");
 PatternFP FP3PatternFP_thread_0("FP3_thread_0");
 PatternFP FP3PatternFP_thread_1("FP3_thread_1");
 PatternFP FP3PatternFP_thread_2("FP3_thread_2");
 PatternFP FP3PatternFP_thread_3("FP3_thread_3");
+PatternFP FP4PatternFP("FP4", "SMARTS_InteLigand.txt");
 PatternFP FP4PatternFP_thread_0("FP4_thread_0", "SMARTS_InteLigand.txt");
 PatternFP FP4PatternFP_thread_1("FP4_thread_1", "SMARTS_InteLigand.txt");
 PatternFP FP4PatternFP_thread_2("FP4_thread_2", "SMARTS_InteLigand.txt");
