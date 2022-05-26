@@ -1,7 +1,14 @@
+//! Openbabel Fingerprint
+//! 
+//! # Environment variable BABEL_DATA setting
+//! 
+//! PatternFP fingerprint might require data files as input, e.g. the derivatives FP3 and FP4 require data files of patterns.txt and SMARTS_InteLigand.txt respectively.
+//! Set BABEL_DATADIR to where those files are located, if "Open Babel Error in Read PatternFile" is encountered,
+
 use openbabel_sys::ob;
 use super::molecule;
 
-pub enum FingerprintOpenBabelKind {
+pub enum Kind {
     FP2 { nbits: u32 },
     FP3 { nbits: u32 },
     FP4 { nbits: u32 },
@@ -13,46 +20,43 @@ pub enum FingerprintOpenBabelKind {
     ECFP10 { nbits: u32 }
 }
 
-impl FingerprintOpenBabelKind {
+impl Kind {
     fn as_str(&self, thread_id: u32) -> String {
         let fp_name = match self {
-            FingerprintOpenBabelKind::FP2 { nbits: _ } => "FP2",
-            FingerprintOpenBabelKind::FP3 { nbits: _ } => "FP3",
-            FingerprintOpenBabelKind::FP4 { nbits: _ } => "FP4",
-            FingerprintOpenBabelKind::ECFP0 { nbits: _ } => "ECFP0",
-            FingerprintOpenBabelKind::ECFP2 { nbits: _ } => "ECFP2",
-            FingerprintOpenBabelKind::ECFP4 { nbits: _ } => "ECFP4",
-            FingerprintOpenBabelKind::ECFP6 { nbits: _ } => "ECFP6",
-            FingerprintOpenBabelKind::ECFP8 { nbits: _ } => "ECFP8",
-            FingerprintOpenBabelKind::ECFP10 { nbits: _ } => "ECFP10",
+            Kind::FP2 { nbits: _ } => "FP2",
+            Kind::FP3 { nbits: _ } => "FP3",
+            Kind::FP4 { nbits: _ } => "FP4",
+            Kind::ECFP0 { nbits: _ } => "ECFP0",
+            Kind::ECFP2 { nbits: _ } => "ECFP2",
+            Kind::ECFP4 { nbits: _ } => "ECFP4",
+            Kind::ECFP6 { nbits: _ } => "ECFP6",
+            Kind::ECFP8 { nbits: _ } => "ECFP8",
+            Kind::ECFP10 { nbits: _ } => "ECFP10",
         };
         format!("{}_thread_{}", fp_name, thread_id)
     }
 
     fn get_nbits(&self) -> &u32 {
         match self {
-            FingerprintOpenBabelKind::FP2 { nbits } => nbits,
-            FingerprintOpenBabelKind::FP3 { nbits } => nbits,
-            FingerprintOpenBabelKind::FP4 { nbits } => nbits,
-            FingerprintOpenBabelKind::ECFP0 { nbits } => nbits,
-            FingerprintOpenBabelKind::ECFP2 { nbits } => nbits,
-            FingerprintOpenBabelKind::ECFP4 { nbits } => nbits,
-            FingerprintOpenBabelKind::ECFP6 { nbits } => nbits,
-            FingerprintOpenBabelKind::ECFP8 { nbits } => nbits,
-            FingerprintOpenBabelKind::ECFP10 { nbits } => nbits,
+            Kind::FP2 { nbits } => nbits,
+            Kind::FP3 { nbits } => nbits,
+            Kind::FP4 { nbits } => nbits,
+            Kind::ECFP0 { nbits } => nbits,
+            Kind::ECFP2 { nbits } => nbits,
+            Kind::ECFP4 { nbits } => nbits,
+            Kind::ECFP6 { nbits } => nbits,
+            Kind::ECFP8 { nbits } => nbits,
+            Kind::ECFP10 { nbits } => nbits,
         }
     }
 }
 
 pub struct Fingerprint {
-    kind: FingerprintOpenBabelKind
+    kind: Kind
 }
 
 impl Fingerprint {
-    /// Fingerprint FP3 & FP4 require data files of patterns.txt and SMARTS_InteLigand.txt 
-    /// If "Open Babel Error in Read PatternFile" is encountered,
-    /// setting BABEL_DATADIR to where those files are located will solve the issue.
-    pub fn new(kind: FingerprintOpenBabelKind) -> Self {
+    pub fn new(kind: Kind) -> Self {
         Self { kind }
     }
 
@@ -75,9 +79,9 @@ mod test_mod_fingerprint {
     fn test_fingerprint_fp() {
         let mol = molecule::Molecule::new_from_smiles("CCNCC");
         for fp in vec![
-            Fingerprint::new(FingerprintOpenBabelKind::FP2 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::FP3 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::FP4 { nbits: 4096 })
+            Fingerprint::new(Kind::FP2 { nbits: 4096 }),
+            Fingerprint::new(Kind::FP3 { nbits: 4096 }),
+            Fingerprint::new(Kind::FP4 { nbits: 4096 })
         ].iter() {
             let fp_data = fp.get_fingerprint(&mol, 0);
             assert_eq!(fp_data.len(), 128);
@@ -87,9 +91,9 @@ mod test_mod_fingerprint {
     #[test]
     fn test_fingerprint_fp_in_batch() {
         for fp in vec![
-            Fingerprint::new(FingerprintOpenBabelKind::FP2 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::FP3 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::FP4 { nbits: 4096 })
+            Fingerprint::new(Kind::FP2 { nbits: 4096 }),
+            Fingerprint::new(Kind::FP3 { nbits: 4096 }),
+            Fingerprint::new(Kind::FP4 { nbits: 4096 })
         ].iter() {
             let smiles_vec = vec![
                 String::from("CCNCC"),
@@ -104,12 +108,12 @@ mod test_mod_fingerprint {
     fn test_fingerprint_ecfp() {
         let mol = molecule::Molecule::new_from_smiles("CCNCC");
         for fp in vec![
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP0 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP2 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP4 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP6 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP8 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP10 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP0 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP2 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP4 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP6 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP8 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP10 { nbits: 4096 }),
         ].iter() {
             let fp_data = fp.get_fingerprint(&mol, 2);
             assert_eq!(fp_data.len(), 128);
@@ -119,12 +123,12 @@ mod test_mod_fingerprint {
     #[test]
     fn test_fingerprint_ecfp_in_batch() {
         for fp in vec![
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP0 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP2 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP4 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP6 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP8 { nbits: 4096 }),
-            Fingerprint::new(FingerprintOpenBabelKind::ECFP10 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP0 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP2 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP4 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP6 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP8 { nbits: 4096 }),
+            Fingerprint::new(Kind::ECFP10 { nbits: 4096 }),
         ].iter() {
             let smiles_vec = vec![
                 String::from("CCNCC"),
