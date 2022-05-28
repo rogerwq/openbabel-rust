@@ -1126,19 +1126,12 @@ fn get_ecfp_for_mols(smiles_vec: &Vec<String>, kind: &openbabel::fingerprint::Ki
     }
 }
 
-fn get_ecfp_in_batch(smiles_vec: &Vec<String>, kind: &openbabel::fingerprint::Kind) {
-    openbabel::fingerprint::get_fingerprint_in_batch(smiles_vec, kind, THREAD_ID);
-}
-
 fn criterion_benchmark(c: &mut Criterion) {
     let kind_ecfp4 = openbabel::fingerprint::Kind::ECFP4 { nbits: 4096 };
 
     c.bench_function("ecfp generation single", |b| b.iter(|| get_ecfp(black_box(&String::from("c1ccccc1N")), &kind_ecfp4))); 
     c.bench_function("ecfp generation single X 100", |b| b.iter(|| get_ecfp_for_mols(black_box(&sample_smiles_100()), &kind_ecfp4))); 
-    c.bench_function("ecfp generation batch 100", |b| b.iter(|| get_ecfp_in_batch(black_box(&sample_smiles_100()), &kind_ecfp4))); 
     c.bench_function("ecfp generation single X 1K", |b| b.iter(|| get_ecfp_for_mols(black_box(&sample_smiles_1000()), &kind_ecfp4))); 
-    // 1K for batch function could be extremely long
-    // c.bench_function("ecfp generation batch 1K", |b| b.iter(|| get_ecfp_in_batch(black_box(&sample_smiles_1000()), &kind_ecfp4))); 
     
     // benchmark in group
     // let mut group = c.benchmark_group("ecfp generation");

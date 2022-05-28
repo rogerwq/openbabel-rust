@@ -19,7 +19,6 @@ pub mod ob {
 
         // OBFingerprint
         fn OBFingerprint_get_fingerprint(fp_thread_name: &CxxString, mol: &UniquePtr<OBMol>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
-        fn OBFingerprint_get_fingerprint_in_batch(fp_thread_name: &CxxString, smiles_vec: &Vec<String>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
 
         // OBSmartsPattern
         fn OBSmartsPattern_new(smarts: &CxxString) -> UniquePtr<OBSmartsPattern>;
