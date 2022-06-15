@@ -80,16 +80,12 @@ fn main() {
     }
 
     // Compiling
-    let incl_src = std::path::Path::new("./src");
-    let incl_ob_repo = std::path::Path::new("./openbabel/include");
-
     cxx_build::bridge("src/lib.rs")
         .file("openbabel/src/base.cpp")
         .file("openbabel/src/atom.cpp")
         .file("openbabel/src/bond.cpp")
         .file("openbabel/src/oberror.cpp")
         .file("openbabel/src/tokenst.cpp")
-        .file("openbabel/src/transform.cpp")
         .file("openbabel/src/generic.cpp")
         .file("openbabel/src/rand.cpp")
         .file("openbabel/src/graphsym.cpp")
@@ -109,6 +105,7 @@ fn main() {
         .file("openbabel/src/parsmart.cpp")
         .file("openbabel/src/residue.cpp")
         .file("openbabel/src/mol.cpp")
+        .file("openbabel/src/transform.cpp")
         .file("openbabel/src/obconversion.cpp")
         .file("openbabel/src/format.cpp")
         .file("openbabel/src/obmolecformat.cpp")
@@ -116,7 +113,6 @@ fn main() {
         .file("openbabel/src/kekulize.cpp")
         .file("openbabel/src/canon.cpp")
         .file("openbabel/src/obfunctions.cpp")
-        .file("openbabel/src/fingerprint.cpp")
         .file("openbabel/src/stereo/cistrans.cpp")
         .file("openbabel/src/stereo/tetrahedral.cpp")
         .file("openbabel/src/stereo/tetranonplanar.cpp")
@@ -127,20 +123,16 @@ fn main() {
         .file("openbabel/src/stereo/tetraplanar.cpp")
         .file("openbabel/src/math/vector3.cpp")
         .file("openbabel/src/math/matrix3x3.cpp")
-        //.file("openbabel/src/formats/smilesformat.cpp")
-        .file("src/formats/smilesformat.cpp")
-        // .file("openbabel/src/fingerprints/finger2.cpp")
-        // .file("openbabel/src/fingerprints/finger3.cpp")
-        // .file("openbabel/src/fingerprints/fingerecfp.cpp")
-        .file("src/fingerprints/finger2.cpp")
-        .file("src/fingerprints/finger3.cpp")
-        .file("src/fingerprints/fingerecfp.cpp")
+        .file("openbabel/src/formats/smilesformat.cpp")
+        .file("openbabel/src/fingerprint.cpp")
+        .file("openbabel/src/fingerprints/finger2.cpp")
+        .file("openbabel/src/fingerprints/finger3.cpp")
+        .file("openbabel/src/fingerprints/fingerecfp.cpp")
         .file("src/wrapper.cpp")
         .include(include)
-        .include(incl_src)
-        .include(incl_src.join("formats"))
+        .include("src")
+        .include("openbabel/include")
         .include("openbabel/src/formats") // smilesvalence.h
-        .include(incl_ob_repo)
         .flag_if_supported("-std=c++14")
         .flag("-Wno-unused-parameter")
         .flag("-Wno-unused-function")
@@ -155,6 +147,6 @@ fn main() {
         .compile("openbabel");
 
         println!("cargo:rerun-if-changed=src/lib.rs");
+        println!("cargo:rerun-if-changed=src/wrapper.h");
         println!("cargo:rerun-if-changed=src/wrapper.cpp");
-
 }
