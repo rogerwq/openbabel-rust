@@ -1,4 +1,5 @@
 use criterion;
+use openbabel;
 use chiral_db_sources;
 
 fn get_ecfp(smiles: &String, fpg: &openbabel::fingerprint::FingerprintGenerator) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
@@ -19,20 +20,13 @@ fn criterion_benchmark(c: &mut criterion::Criterion) {
     let mut sc = chiral_db_sources::chembl::SourceChembl::new();
     sc.load();
 
-    let smiles_100:Vec<String> = sc.choices(100).iter()
-        .map(|ec| ec.smiles.clone())
-        .collect();
-    let smiles_200:Vec<String> = sc.choices(200).iter()
-        .map(|ec| ec.smiles.clone())
-        .collect();
-    let smiles_500:Vec<String> = sc.choices(500).iter()
-        .map(|ec| ec.smiles.clone())
-        .collect();
-
-    c.bench_function("ecfp generation single", |b| b.iter(|| get_ecfp(criterion::black_box(&String::from("c1ccccc1N")), &fpg))); 
-    c.bench_function("ecfp generation single x 100", |b| b.iter(|| get_ecfp_for_mols(criterion::black_box(&smiles_100), &fpg))); 
-    c.bench_function("ecfp generation single x 200", |b| b.iter(|| get_ecfp_for_mols(criterion::black_box(&smiles_200), &fpg))); 
-    c.bench_function("ecfp generation single x 500", |b| b.iter(|| get_ecfp_for_mols(criterion::black_box(&smiles_500), &fpg))); 
+    c.bench_function("ECFP4 fingerprint generation - 1 mol", |b| b.iter(|| get_ecfp(criterion::black_box(&String::from("c1ccccc1N")), &fpg))); 
+    for &count in vec![100, 200, 500, 1000].iter() {
+        let smiles: Vec<String> = sc.choices(count).iter()
+            .map(|ec| ec.smiles.clone())
+            .collect();
+        c.bench_function(format!("ECFP fingerprint generation - {} mols", count).as_str(), |b| b.iter(|| get_ecfp_for_mols(criterion::black_box(&smiles), &fpg))); 
+    }
     
     // benchmark in group
     // let mut group = c.benchmark_group("ecfp generation");
