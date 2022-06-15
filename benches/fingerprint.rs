@@ -44,10 +44,5 @@ fn criterion_benchmark(c: &mut criterion::Criterion) {
 }
 
 
-<<<<<<< HEAD
-criterion_group!(benches, criterion_benchmark);
-criterion_main!(benches);
-=======
 criterion::criterion_group!(benches, criterion_benchmark);
 criterion::criterion_main!(benches);
->>>>>>> dev

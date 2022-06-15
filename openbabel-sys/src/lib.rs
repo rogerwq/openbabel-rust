@@ -46,11 +46,7 @@ pub mod ob {
         fn OBMol_get_mol_wt(mol: &UniquePtr<OBMol>) -> f64;
 
         // OBFingerprint
-<<<<<<< HEAD
-        fn OBFingerprint_get_fingerprint(fp_thread_name: &CxxString, mol: &UniquePtr<OBMol>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
-=======
         fn OBFingerprint_get_fingerprint(fp_name: &CxxString, mol: &UniquePtr<OBMol>, nbits: u32) -> UniquePtr<CxxVector<u32>>;
->>>>>>> dev
 
         // OBSmartsPattern
         fn OBSmartsPattern_from_smarts(smarts: &CxxString) -> UniquePtr<OBSmartsPattern>;
