@@ -22,3 +22,7 @@ chiral_db_sources = { package = "chiral_db_sources", git = "https://github.com/c
 [[bench]]
 name = "fingerprint"
 harness = false
+
+[[example]]
+name = "fingerprint"
+path = "examples/fingerprint.rs"
