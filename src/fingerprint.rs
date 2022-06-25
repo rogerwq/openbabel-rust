@@ -22,7 +22,7 @@
 use ob_rs::ob;
 use super::molecule;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Kind {
     FP2 { nbits: u32 },
     FP3 { nbits: u32 },
@@ -51,7 +51,7 @@ impl Kind {
         format!("{}", fp_name)
     }
 
-    fn get_nbits(&self) -> &u32 {
+    pub fn get_nbits(&self) -> &u32 {
         match self {
             Kind::FP2 { nbits } => nbits,
             Kind::FP3 { nbits } => nbits,

@@ -1,6 +1,6 @@
 [package]
 name = "openbabel"
-version = "0.2.3"
+version = "0.3.0"
 edition = "2018"
 authors = ["Qin Wan <rogerwq@gmail.com>"]
 license = "MIT"
@@ -12,8 +12,8 @@ keywords = ["cheminformatics", "openbabel"]
 categories = ["science"]
 
 [dependencies]
-ob_rs = { package = "openbabel-sys", path = "openbabel-sys", version = "0.1.6" }
 cxx = "1.0"
+ob_rs = { package = "openbabel-sys", path = "openbabel-sys", version = "0.1.7" }
 
 [dev-dependencies]
 criterion = "0.3.5"
