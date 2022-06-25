@@ -1,0 +1,50 @@
+name: CI
+on: 
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [x86_64-musl]
+        include:
+          - build: x86_64-musl
+            os: ubuntu-latest
+            rust: stable
+            docker: musl
+            target: x86_64-unknown-linux-musl
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Install Rust (rustup)
+      run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
+      shell: bash
+    - run: rustup target add ${{ matrix.target }}
+    - run: TARGET=${{ matrix.target }} ./ci/run.sh
+      if: matrix.os != 'ubuntu-latest'
+      name: Run non-docker tests
+      shell: bash
+    - run: |
+        set -e
+        cargo generate-lockfile
+        mkdir .cargo target
+        docker build -t rust -f ci/Dockerfile-${{ matrix.docker }} ci
+        docker run \
+          -w /src \
+          -v `pwd`:/src:ro \
+          -v `pwd`/target:/src/target \
+          -v `pwd`/ci/.cargo:/src/.cargo:ro \
+          -v `rustc --print sysroot`:/usr/local:ro \
+          -e TARGET=${{ matrix.target }} \
+          -e NO_RUN=${{ matrix.no_run }} \
+          -e CARGO_TARGET_DIR=/src/target \
+          rust \
+          sh ci/run.sh
+      if: matrix.os == 'ubuntu-latest'
+      name: Run docker tests

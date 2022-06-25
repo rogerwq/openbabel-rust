@@ -1,5 +1,10 @@
 # OpenBabel bindings for Rust
 
+[![Latest Version](https://img.shields.io/crates/v/openbabel.svg)](https://crates.io/crates/openbabel)
+[![Documentation](https://docs.rs/openbabel/badge.svg)](https://docs.rs/openbabel)
+[![License](https://img.shields.io/github/license/rogerwq/openbabel-rust.svg)](LICENSE)
+[![Build](https://github.com/rogerwq/openbabel-rust/workflows/CI/badge.svg)](https://github.com/rogerwq/openbabel-rust/actions)
+
 This repository is composed of two packages:
 - openbabel-sys: FFI to OpenBabel C++ codes.
 - openbabel: Rust wrappers for easy usage.

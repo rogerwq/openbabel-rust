@@ -1,6 +1,6 @@
 [package]
 name = "openbabel-sys"
-version = "0.1.4+openbabel-3.1.1"
+version = "0.1.7+openbabel-3.1.1"
 edition = "2018"
 authors = ["Qin Wan <rogerwq@gmail.com>"]
 license = "MIT"
@@ -11,15 +11,25 @@ documentation = "https://docs.rs/openbabel-sys"
 keywords = ["cheminformatics", "openbabel", "cplusplus", "ffi"]
 categories = ["science"]
 include = [
+    "/openbabel/src/config.h.cmake",
     "/openbabel/src/*.cpp",
     "/openbabel/src/stereo/*.cpp",
-    "/openbabeel/src/math/*.cpp",
+    "/openbabel/src/math/*.cpp",
     "/openbabel/src/formats/*.cpp",
     "/openbabel/src/fingerprints/*.cpp",
-    "/openbabel/data/patterns.txt",
-    "/openbabel/data/SMARTS_InteLigand.txt",
-    "/src"
+    "/openbabel/include/openbabel",
+    "/openbabel/src/*.h",
+    "/openbabel/src/stereo/*.h",
+    "/openbabel/src/formats/*.h",
+    "/src",
+    "/src/data/*.h",
+    "/scripts",
+    "build.rs"
 ]
+
+[lib]
+name = 'openbabel_sys'
+path = "src/lib.rs"
 
 [dependencies]
 cxx = "1.0"
