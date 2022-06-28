@@ -81,6 +81,7 @@ impl FingerprintGenerator {
     }
 }
 
+
 #[cfg(test)]
 mod test_mod_fingerprint {
     use super::*;
