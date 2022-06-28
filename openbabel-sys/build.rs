@@ -10,11 +10,11 @@ fn main() {
         std::fs::create_dir(&include).unwrap();
     }
 
-    if !std::path::Path::new("openbabel/.git").exists() {
-        let _ = std::process::Command::new("git")
-            .args(&["submodule", "update", "--init"])
-            .status().unwrap();
-    }
+    // if !std::path::Path::new("openbabel/.git").exists() {
+    //     match std::process::Command::new("git")
+    //         .args(&["submodule", "update", "--init"])
+    //         .status().unwrap();
+    // }
 
     // copy data directory
     let data_ob = dst.join("data").join(&version);

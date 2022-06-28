@@ -1,6 +1,6 @@
 [package]
 name = "openbabel"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2018"
 authors = ["Qin Wan <rogerwq@gmail.com>"]
 license = "MIT"
@@ -13,11 +13,12 @@ categories = ["science"]
 
 [dependencies]
 cxx = "1.0"
-ob_rs = { package = "openbabel-sys", path = "openbabel-sys", version = "0.1.7" }
+# ob_rs = { package = "openbabel-sys", path = "openbabel-sys", version = "0.1.7" }
+ob_rs = { package = "openbabel-sys", version = "0.1.7" }
 
 [dev-dependencies]
 criterion = "0.3.5"
-chiral_db_sources = { package = "chiral_db_sources", git = "https://github.com/chiral-data/chiral-db-sources.git", branch = "dev" }
+chiral_db_sources = { package = "chiral-db-sources", git = "https://github.com/chiral-data/chiral-db-sources.git" }
 
 [[bench]]
 name = "fingerprint"
