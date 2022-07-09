@@ -14,9 +14,23 @@
 //! use openbabel::molecule;
 //! 
 //! let fpg = fingerprint::FingerprintGenerator::new(fingerprint::Kind::ECFP4 { nbits: 2048 });
+//! 
 //! let mol = molecule::Molecule::new_from_smiles("c1ccccc1");
 //! let fpd = fpg.get_fingerprint(&mol);
 //! assert_eq!(fpd.len(), 64);
+//! 
+//! let aspirin = String::from("O=C(C)Oc1ccccc1C(=O)O");
+//! let seroquel = String::from("N1=C(c3c(Sc2c1cccc2)cccc3)N4CCN(CCOCCO)CC4");
+//! let lipitor = String::from("O=C(O)C[C@H](O)C[C@H](O)CCn2c(c(c(c2c1ccc(F)cc1)c3ccccc3)C(=O)Nc4ccccc4)C(C)C");
+//! let tylenol = String::from("CC(=O)Nc1ccc(O)cc1");
+//! let smiles_vec = vec![&aspirin, &seroquel, &lipitor, &tylenol];
+//! 
+//! let fpd_of_mols = fpg.get_fingerprint_for_smiles_vec(&smiles_vec);
+//! assert_eq!(fpd_of_mols.len(), 4);
+//! for i in 0..4 {
+//!     assert_eq!(fpd_of_mols[i].len(), 64);
+//! }
+//! 
 //! ```
 
 use ob_rs::ob;
@@ -79,6 +93,15 @@ impl FingerprintGenerator {
         cxx::let_cxx_string!(fp_name = &self.kind.as_str());
         ob::OBFingerprint_get_fingerprint(&fp_name, &mol.ob_mol, *self.kind.get_nbits()) // If nbits <=0, nbits = 4096
     }
+
+    pub fn get_fingerprint_for_smiles_vec(&self, smiles_vec: &Vec<&String>) -> Vec<cxx::UniquePtr<cxx::CxxVector<u32>>> {
+        smiles_vec.iter()
+            .map(|smiles| {
+                let mol = molecule::Molecule::new_from_smiles(smiles);
+                self.get_fingerprint(&mol)
+            })
+            .collect()
+    }
 }
 
 
@@ -103,7 +126,7 @@ mod test_mod_fingerprint {
     // }
 
     #[test]
-    fn test_fp_generator() {
+    fn test_get_fp() {
         for fpk in vec![
             Kind::FP2 { nbits: 4096 },
             Kind::FP3 { nbits: 4096 },
@@ -119,6 +142,32 @@ mod test_mod_fingerprint {
             let fpg = FingerprintGenerator::new(fpk.clone());
             let fpd = fpg.get_fingerprint(&mol);
             assert_eq!(fpd.len(), 128);
+        }
+    }
+
+    #[test]
+    fn test_get_fp_for_smiles_vec() {
+        let smiles_1 = String::from("CCNCC");
+        let smiles_2 = String::from("c1ccccc1");
+        let smiles_vec = vec![
+            &smiles_1, &smiles_2
+        ];
+        for fpk in vec![
+            Kind::FP2 { nbits: 4096 },
+            Kind::FP3 { nbits: 4096 },
+            Kind::FP4 { nbits: 4096 },
+            Kind::ECFP0 { nbits: 4096 },
+            Kind::ECFP2 { nbits: 4096 },
+            Kind::ECFP4 { nbits: 4096 },
+            Kind::ECFP6 { nbits: 4096 },
+            Kind::ECFP8 { nbits: 4096 },
+            Kind::ECFP10 { nbits: 4096 },
+        ].iter() {
+            let fpg = FingerprintGenerator::new(fpk.clone());
+            let fpd_vec = fpg.get_fingerprint_for_smiles_vec(&smiles_vec);
+            assert_eq!(fpd_vec.len(), 2);
+            assert_eq!(fpd_vec[0].len(), 128);
+            assert_eq!(fpd_vec[1].len(), 128);
         }
     }
 }

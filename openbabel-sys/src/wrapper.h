@@ -3,12 +3,12 @@
 #include "rust/cxx.h"
 #include <openbabel/mol.h>
 #include <openbabel/parsmart.h>
-#include <openbabel/obconversion.h>
+// #include <openbabel/obconversion.h>
 
 namespace OpenBabel {
     class OBMol;
     class OBSmartsPattern;
-    class OBConversion;
+    // class OBConversion;
 
     // Debug
     void print_global_instances();
