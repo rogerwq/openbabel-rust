@@ -1,6 +1,7 @@
 use criterion;
 use openbabel;
 use chiral_db_sources;
+use chiral_db_fp_kind::openbabel::Kind;
 
 fn get_ecfp(smiles: &String, fpg: &openbabel::fingerprint::FingerprintGenerator) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
     let mol = openbabel::molecule::Molecule::new_from_smiles(smiles);
@@ -15,7 +16,7 @@ fn get_ecfp_for_mols(smiles_vec: &Vec<String>, fpg: &openbabel::fingerprint::Fin
 }
 
 fn criterion_benchmark(c: &mut criterion::Criterion) {
-    let fpg = openbabel::fingerprint::FingerprintGenerator::new(openbabel::fingerprint::Kind::ECFP4 { nbits: 2048 });
+    let fpg = openbabel::fingerprint::FingerprintGenerator::new(Kind::ECFP4 { nbits: 2048 });
     
     let sc = chiral_db_sources::chembl::SourceChembl::new_default();
     c.bench_function("ECFP4 fingerprint generation - 1 mol", |b| b.iter(|| get_ecfp(criterion::black_box(&String::from("c1ccccc1N")), &fpg))); 
