@@ -93,6 +93,13 @@ fn main() {
         .file("openbabel/src/fingerprints/finger2.cpp")
         .file("openbabel/src/fingerprints/finger3.cpp")
         .file("openbabel/src/fingerprints/fingerecfp.cpp")
+        .file("openbabel/src/forcefields/forcefielduff.cpp")
+        .file("openbabel/src/forcefields/forcefieldgaff.cpp")
+        .file("openbabel/src/forcefields/forcefieldmmff94.cpp")
+        .file("openbabel/src/forcefields/forcefieldghemical.cpp")
+        .file("openbabel/src/forcefield.cpp")
+        .file("openbabel/src/molchrg.cpp")
+        // .file("openbabel/src/forcefields/forcefieldmm2.cpp")  // compilation error when added
         .file("src/wrapper.cpp")
         .include(include)
         .include("src")
