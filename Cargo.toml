@@ -17,7 +17,7 @@ ob_rs = { package = "openbabel-sys", path = "openbabel-sys", version = "0.1.7" }
 
 [dev-dependencies]
 criterion = "0.3.5"
-chiral_db_sources = { package = "chiral_db_sources", git = "https://github.com/chiral-data/chiral-db-sources.git", branch = "dev" }
+# chiral_db_sources = { package = "chiral_db_sources", git = "https://github.com/chiral-data/chiral-db-sources.git", branch = "dev" }
 
 [[bench]]
 name = "fingerprint"
