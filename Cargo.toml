@@ -14,6 +14,8 @@ categories = ["science"]
 [dependencies]
 cxx = "1.0"
 ob_rs = { package = "openbabel-sys", path = "openbabel-sys", version = "0.1.7" }
+strum = { version = "0.24", features = ["derive"] }
+strum_macros = "0.24"
 
 [dev-dependencies]
 criterion = "0.3.5"

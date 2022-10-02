@@ -1,3 +1,4 @@
+pub mod conversion;
 pub mod utils;
 pub mod molecule;
 pub mod fingerprint;
