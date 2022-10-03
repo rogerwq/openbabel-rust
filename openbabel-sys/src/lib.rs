@@ -55,21 +55,21 @@ pub mod ob {
         fn OBConversion_set_in_format(
             conv: &UniquePtr<OBConversion>,
             input_format: &CxxString,
-        ) -> u32;
+        ) -> bool;
         fn OBConversion_set_out_format(
             conv: &UniquePtr<OBConversion>,
             output_format: &CxxString,
-        ) -> u32;
+        ) -> bool;
         fn OBConversion_set_in_and_out_formats(
             conv: &UniquePtr<OBConversion>,
             input_format: &CxxString,
             output_format: &CxxString,
-        ) -> u32;
+        ) -> bool;
         fn OBConversion_read_string(
             conv: &UniquePtr<OBConversion>,
             mol: &UniquePtr<OBMol>,
             input: &CxxString,
-        ) -> u32;
+        ) -> bool;
         fn OBConversion_write_string(
             conv: &UniquePtr<OBConversion>,
             mol: &UniquePtr<OBMol>,
@@ -78,12 +78,12 @@ pub mod ob {
             conv: &UniquePtr<OBConversion>,
             mol: &UniquePtr<OBMol>,
             input_path: &CxxString,
-        ) -> u32;
+        ) -> bool;
         fn OBConversion_write_file(
             conv: &UniquePtr<OBConversion>,
             mol: &UniquePtr<OBMol>,
             output_path: &CxxString,
-        ) -> u32;
+        ) -> bool;
         fn OBConversion_get_supported_input_format() -> Vec<String>;
         fn OBConversion_get_supported_output_format() -> Vec<String>;
 

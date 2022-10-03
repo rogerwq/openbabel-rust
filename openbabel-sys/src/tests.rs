@@ -94,11 +94,11 @@ Au      1.442498    2.498480    0.000000";
         let obconv = ob::OBConversion_new();
         cxx::let_cxx_string!(input = TEST_XYZ);
         cxx::let_cxx_string!(input_format = "xyz");
-        let result = ob::OBConversion_set_in_format(&obconv, &input_format);
-        assert_eq!(result, 0, "unable to set input format");
+        assert!(ob::OBConversion_set_in_format(&obconv, &input_format), "unable to set input format");
+        // assert!(result, "unable to set input format");
 
-        let result = ob::OBConversion_read_string(&obconv, &obmol, &input);
-        assert_eq!(result, 0, "unable to read molecule");
+        assert!(ob::OBConversion_read_string(&obconv, &obmol, &input), "unable to read molecule");
+        // assert_eq!(result, 0, "unable to read molecule");
 
         assert_eq!(ob::OBMol_num_atoms(&obmol), 2, "wrong number of atoms");
     }
@@ -111,15 +111,15 @@ Au      1.442498    2.498480    0.000000";
 
         // set input and output format separately
         cxx::let_cxx_string!(input_format = "xyz");
-        let result = ob::OBConversion_set_in_format(&obconv, &input_format);
-        assert_eq!(result, 0, "unable to set input format");
+        assert!(ob::OBConversion_set_in_format(&obconv, &input_format), "unable to set input format");
+        // assert_eq!(result, 0, "unable to set input format");
 
         cxx::let_cxx_string!(output_format = "smi");
-        let result = ob::OBConversion_set_out_format(&obconv, &output_format);
-        assert_eq!(result, 0, "unable to set output format");
+        assert!(ob::OBConversion_set_out_format(&obconv, &output_format), "unable to set output format");
+        // assert_eq!(result, 0, "unable to set output format");
 
-        let result = ob::OBConversion_read_string(&obconv, &obmol, &input);
-        assert_eq!(result, 0, "unable to read molecule");
+        assert!(ob::OBConversion_read_string(&obconv, &obmol, &input), "unable to read molecule");
+        // assert_eq!(result, 0, "unable to read molecule");
 
         let result_str = ob::OBConversion_write_string(&obconv, &obmol);
         assert_eq!(
@@ -139,19 +139,18 @@ Au      1.442498    2.498480    0.000000";
 
         cxx::let_cxx_string!(input_format_cxx = "xyz");
         cxx::let_cxx_string!(output_format_cxx = "xyz");
-        let result =
-            ob::OBConversion_set_in_and_out_formats(&obconv, &input_format_cxx, &output_format_cxx);
-        assert_eq!(result, 0, "unable to set input and output format");
+        assert!(ob::OBConversion_set_in_and_out_formats(&obconv, &input_format_cxx, &output_format_cxx), "unable to set input and output format");
+        // assert_eq!(result, 0, "unable to set input and output format");
 
-        let result = ob::OBConversion_read_string(&obconv, &write_obmol, &input);
-        assert_eq!(result, 0, "unable to read molecule");
+        assert!(ob::OBConversion_read_string(&obconv, &write_obmol, &input), "unable to read molecule");
+        // assert_eq!(result, 0, "unable to read molecule");
 
-        let result = ob::OBConversion_write_file(&obconv, &write_obmol, &file_path_cxx);
-        assert_eq!(result, 0, "unable to write to file");
+        assert!(ob::OBConversion_write_file(&obconv, &write_obmol, &file_path_cxx), "unable to write to file");
+        // assert_eq!(result, 0, "unable to write to file");
 
         let read_obmol = ob::OBMol_new();
-        let result = ob::OBConversion_read_file(&obconv, &read_obmol, &file_path_cxx);
-        assert_eq!(result, 0, "unable to read file");
+        assert!(ob::OBConversion_read_file(&obconv, &read_obmol, &file_path_cxx), "unable to read file");
+        // assert_eq!(result, 0, "unable to read file");
         assert_eq!(ob::OBMol_num_atoms(&read_obmol), 2, "wrong number of atoms");
     }
 }

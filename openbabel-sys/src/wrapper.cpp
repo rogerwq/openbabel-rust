@@ -21,78 +21,84 @@ namespace OpenBabel {
 
 std::unique_ptr<OBConversion> OBConversion_new() { return std::unique_ptr<OBConversion>(new OBConversion()); }
 
-unsigned int OBConversion_set_in_format(const std::unique_ptr<OBConversion> & pConv, const std::string &input_format) {
+bool OBConversion_set_in_format(const std::unique_ptr<OBConversion> & pConv, const std::string &input_format) {
     OBFormat* pFormat = OBConversion::FindFormat(input_format);
+    bool result = pConv.get()->SetInFormat(pFormat);
 
-    if (!pConv.get()->SetInFormat(pFormat)) {
+    if (!result) {
 	std::stringstream errorMsg;
         errorMsg << "OBConversion::SetInFormat(" << input_format << ")" << std::endl;
         obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
-        return 1;
+        return result;
     }
 
-    return 0;
+    return result;
 }
 
-unsigned int OBConversion_set_out_format(const std::unique_ptr<OBConversion> & pConv, const std::string &output_format) {
+bool OBConversion_set_out_format(const std::unique_ptr<OBConversion> & pConv, const std::string &output_format) {
     OBFormat* pFormat = OBConversion::FindFormat(output_format);
+    bool result = pConv.get()->SetOutFormat(pFormat);
 
-    if (!pConv.get()->SetOutFormat(pFormat)) {
+    if (!result) {
 	std::stringstream errorMsg;
         errorMsg << "OBConversion::SetOutFormat(" << output_format << ")" << std::endl;
         obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
-        return 1;
+        return result;
     }
 
-    return 0;
+    return result;
 }
 
-unsigned int OBConversion_set_in_and_out_formats(const std::unique_ptr<OBConversion> & pConv, const std::string &input_format, const std::string &output_format) {
+bool OBConversion_set_in_and_out_formats(const std::unique_ptr<OBConversion> & pConv, const std::string &input_format, const std::string &output_format) {
     OBFormat* pInFormat = OBConversion::FindFormat(input_format);
     OBFormat* pOutFormat = OBConversion::FindFormat(output_format);
+    bool result = pConv.get()->SetInAndOutFormats(pInFormat, pOutFormat);
 
-    if (!pConv.get()->SetInAndOutFormats(pInFormat, pOutFormat)) {
+    if (!result) {
 	std::stringstream errorMsg;
         errorMsg << "OBConversion::SetInAndOutFormats(" << output_format << ")" << std::endl;
         obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
-        return 1;
+        return result;
     }
 
-    return 0;
+    return result;
 }
 
-unsigned int OBConversion_read_string(const std::unique_ptr<OBConversion> & pConv, const std::unique_ptr<OBMol> & pMol, const std::string &input) {
-    if (!pConv.get()->ReadString(pMol.get(), input.c_str())) {
+bool OBConversion_read_string(const std::unique_ptr<OBConversion> & pConv, const std::unique_ptr<OBMol> & pMol, const std::string &input) {
+    bool result = pConv.get()->ReadString(pMol.get(), input.c_str());
+    if (!result) {
 	std::stringstream errorMsg;
         errorMsg << "OBConversion::ReadString error" << std::endl;
         obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
-	return 1;
+	return result;
     }
-    return 0;
+    return result;
 }
 
 rust::String OBConversion_write_string(const std::unique_ptr<OBConversion> & pConv, const std::unique_ptr<OBMol> & pMol) {
     return pConv.get()->WriteString(pMol.get());
 }
 
-unsigned int OBConversion_read_file(const std::unique_ptr<OBConversion> & pConv, const std::unique_ptr<OBMol> & pMol, const std::string &input_path) {
-    if (!pConv.get()->ReadFile(pMol.get(), input_path)) {
+bool OBConversion_read_file(const std::unique_ptr<OBConversion> & pConv, const std::unique_ptr<OBMol> & pMol, const std::string &input_path) {
+    bool result = pConv.get()->ReadFile(pMol.get(), input_path);
+    if (!result) {
 	std::stringstream errorMsg;
         errorMsg << "OBConversion::ReadFile error" << std::endl;
         obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
-	return 1;
+	return result;
     }
-    return 0;
+    return result;
 }
 
-unsigned int OBConversion_write_file(const std::unique_ptr<OBConversion> & pConv, const std::unique_ptr<OBMol> & pMol, const std::string &output_path) {
-    if (!pConv.get()->WriteFile(pMol.get(), output_path)) {
+bool OBConversion_write_file(const std::unique_ptr<OBConversion> & pConv, const std::unique_ptr<OBMol> & pMol, const std::string &output_path) {
+    bool result = pConv.get()->WriteFile(pMol.get(), output_path);
+    if (!result) {
         std::stringstream errorMsg;
         errorMsg << "OBConversion::WriteFile error" << std::endl;
         obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
-	return 1;
+	return result;
     }
-    return 0;
+    return result;
 }
 
 rust::Vec<rust::String> OBConversion_get_supported_input_format() {
