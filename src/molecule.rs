@@ -32,8 +32,8 @@ impl Molecule {
     pub fn new_from_string(input: &str, formats: Formats) -> Result<Self, ()> {
         let ob_mol = ob::OBMol_new();
         cxx::let_cxx_string!(input_cxx = input);
-        let read_result = ob::OBConversion_read_string(&formats.ob_conv, &ob_mol, &input_cxx);
-        if read_result == 0 {
+        let read_succesful = ob::OBConversion_read_string(&formats.ob_conv, &ob_mol, &input_cxx);
+        if read_succesful {
             return Ok(Self { ob_mol: ob_mol });
         }
         Err(())
@@ -47,8 +47,8 @@ impl Molecule {
         let ob_mol = ob::OBMol_new();
         cxx::let_cxx_string!(file_path_cxx = path.as_ref().to_str().expect("invalid path"));
 
-        let result = ob::OBConversion_read_file(&formats.ob_conv, &ob_mol, &file_path_cxx);
-        if result == 0 {
+        let read_succesful = ob::OBConversion_read_file(&formats.ob_conv, &ob_mol, &file_path_cxx);
+        if read_succesful {
             return Ok(Self { ob_mol });
         }
         Err(())
@@ -73,9 +73,9 @@ impl Molecule {
     pub fn write_to_file<P: AsRef<Path>>(&self, path: P, formats: Formats) -> Result<(), ()> {
         if formats.input_format.is_some() && formats.output_format.is_some() {
             cxx::let_cxx_string!(file_path_cxx = path.as_ref().to_str().expect("invalid path"));
-            let write_result =
+            let write_sucessful =
                 ob::OBConversion_write_file(&formats.ob_conv, &self.ob_mol, &file_path_cxx);
-            if write_result == 0 {
+            if write_sucessful {
                 return Ok(());
             }
         }

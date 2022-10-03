@@ -133,7 +133,7 @@ impl Formats {
                 tmp_input = Some(input_format);
                 ob::OBConversion_set_in_format(&ob_conv, &input_format_cxx)
             }
-            None => 0,
+            None => true,
         };
         let result_out = match output_format {
             Some(output_format) => {
@@ -141,10 +141,10 @@ impl Formats {
                 tmp_output = Some(output_format);
                 ob::OBConversion_set_out_format(&ob_conv, &output_format_cxx)
             }
-            None => 0,
+            None => true,
         };
 
-        if result_in + result_out == 0 {
+        if result_in & result_out {
             Ok(Self {
                 input_format: tmp_input,
                 output_format: tmp_output,
