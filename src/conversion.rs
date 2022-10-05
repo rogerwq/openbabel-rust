@@ -5,7 +5,7 @@
 //! ```
 //! use openbabel::conversion::{Formats, InputFormat, OutputFormat};
 //!
-//! let mut mol = Formats::new(Some(InputFormat::xyz), Some(OutputFormat::fchk));
+//! let mut mol = Formats::new(Some(InputFormat::xyz), Some(OutputFormat::gzmat));
 //! ```
 
 use ob_rs::ob;
@@ -65,42 +65,26 @@ pub enum InputFormat {
 #[non_exhaustive]
 #[allow(non_camel_case_types)]
 pub enum OutputFormat {
-    /// Canonical SMILES format
-    can,
+    /// Gaussian Input
+    com,
     /// Gaussian cube format
     cub,
     /// Gaussian cube format
     cube,
-    /// DALTON output format
-    dallog,
     /// DALTON input format
     dalmol,
-    /// Gaussian formatted checkpoint file format
-    fch,
-    /// Gaussian formatted checkpoint file format
-    fchk,
-    /// Gaussian formatted checkpoint file format
-    fck,
-    /// Gaussian Output
-    g03,
-    /// Gaussian Output
-    g09,
-    /// Gaussian Output
-    g16,
-    /// Gaussian Output
-    g92,
-    /// Gaussian Output
-    g94,
-    /// Gaussian Output
-    g98,
-    /// Gaussian Output
-    gal,
+    /// SMILES FIX format
+    fix,
+    /// Gaussian Input
+    gau,
+    /// Gaussian Input
+    gjc,
+    /// Gaussian Input
+    gjf,
     /// Gaussian Z-Matrix Input
     gzmat,
-    /// ORCA output format
-    orca,
-    /// SIESTA format
-    siesta,
+    /// ORCA input format
+    orcainp,
     /// SMILES format
     smi,
     /// SMILES format
