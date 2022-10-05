@@ -9,8 +9,8 @@ This file contains a binary representation of data tables
 ***************************************************************/
 
 
-#ifndef OB_ATOMIZATION-ENERGIES_H
-#define OB_ATOMIZATION-ENERGIES_H
+#ifndef OB_ATOMIZATION_ENERGIES_H
+#define OB_ATOMIZATION_ENERGIES_H
 
 namespace OpenBabel
 {

@@ -10,6 +10,8 @@ This repository is composed of two packages:
 - openbabel: Rust wrappers for easy usage.
 
 ***multi-thread mode will encounter memory issue and unexpected exit from time to time***
+***Currently not working under Windows***
+***Low-version C++ compiler could lead to unexpected compiling warnings***
 
 ## Binding Progress
 
@@ -20,6 +22,8 @@ This repository is composed of two packages:
 :white_check_mark: OBFingerprint 
 
 :white_check_mark: OBSmartsPatten 
+
+:white_check_mark: OBForceField
 
 
 ## References

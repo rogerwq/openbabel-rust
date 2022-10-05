@@ -122,6 +122,7 @@ fn main() {
         .flag_if_supported("-Wno-misleading-indentation")
         .flag_if_supported("-Wno-parentheses")
         // .flag("-Wno-c++11-extensions")
+        .flag_if_supported("-Wno-unused-private-field")
         .compile("openbabel");
 
         println!("cargo:rerun-if-changed=src/lib.rs");
