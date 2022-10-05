@@ -21,7 +21,19 @@
 //! OBMol_num_hvy_atoms <-> OBMol::NumHvyAtoms
 //! OBMol_get_mol_wt <-> OBMol::GetMolWt
 //!
-//! 
+//! OBForceField
+//! ------------
+//! OBForceField_find_forcefield <-> OBForceField::FindForceField
+//! OBForceField_setup <-> OBForceField::Setup
+//! OBForceField_conjugate_gradients <-> OBForceField::ConjugateGradients
+//! OBForceField_conjugate_gradients_initialize <-> OBForceField::ConjugateGradientsInitialize
+//! OBForceField_conjugate_gradients_take_n_steps <-> OBForceField::ConjugateGradientsTakeNSteps
+//! OBForceField_steepest_descent <-> OBForceField::SteepestDescent
+//! OBForceField_steepest_descent_initialize <-> OBForceField::SteepestDescentInitialize
+//! OBForceField_steepest_descent_take_n_steps <-> OBForceField::SteepestDescentTakeNSteps
+//! OBForceField_energy <-> OBForceField::Energy
+//! OBForceField_is_setup_needed <-> OBForceField::IsSetupNeeded
+//!
 //!  
 //! OBFingerprint
 //! -------------
@@ -45,6 +57,7 @@ pub mod ob {
         type OBMol;
         type OBSmartsPattern;
         type OBConversion;
+        type OBForceField;
 
         // Debug
         fn print_global_instances();
@@ -86,6 +99,35 @@ pub mod ob {
         ) -> bool;
         fn OBConversion_get_supported_input_format() -> Vec<String>;
         fn OBConversion_get_supported_output_format() -> Vec<String>;
+
+        // OBForceField
+        fn OBForceField_find_forcefield(ff_name: &CxxString) -> UniquePtr<OBForceField>;
+        fn OBForceField_setup(mol: &UniquePtr<OBMol>, pFF: &UniquePtr<OBForceField>) -> u32;
+        fn OBForceField_conjugate_gradients(pFF: &UniquePtr<OBForceField>, steps: u32, econv: f64);
+        fn OBForceField_conjugate_gradients_initialize(
+            pFF: &UniquePtr<OBForceField>,
+            steps: u32,
+            econv: f64,
+        );
+        fn OBForceField_conjugate_gradients_take_n_steps(
+            pFF: &UniquePtr<OBForceField>,
+            n: u32,
+        ) -> bool;
+        fn OBForceField_steepest_descent(pFF: &UniquePtr<OBForceField>, steps: u32, econv: f64);
+        fn OBForceField_steepest_descent_initialize(
+            pFF: &UniquePtr<OBForceField>,
+            steps: u32,
+            econv: f64,
+        );
+        fn OBForceField_steepest_descent_take_n_steps(
+            pFF: &UniquePtr<OBForceField>,
+            n: u32,
+        ) -> bool;
+        fn OBForceField_energy(pFF: &UniquePtr<OBForceField>) -> f64;
+        fn OBForceField_is_setup_needed(
+            pFF: &UniquePtr<OBForceField>,
+            mol: &UniquePtr<OBMol>,
+        ) -> bool;
 
         // OBMol
         fn OBMol_new() -> UniquePtr<OBMol>;
