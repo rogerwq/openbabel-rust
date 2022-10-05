@@ -5,4 +5,4 @@ RUN apt-get install -y --no-install-recommends \
   g++ ca-certificates make libc6-dev musl-tools
 
 ENV CXX=g++
-ENV BABEL_DATADIR=/openbabel-sys/openbabel/data
+ENV BABEL_DATADIR=openbabel-sys/openbabel/data
