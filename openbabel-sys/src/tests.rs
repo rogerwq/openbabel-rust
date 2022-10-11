@@ -76,14 +76,14 @@ Au      1.442498    2.498480    0.000000";
         let supported_formats = ob::OBConversion_get_supported_input_format();
         assert_eq!(
             supported_formats.len(),
-            22,
+            26,
             "wrong amount of supported input formats"
         );
 
         let supported_formats = ob::OBConversion_get_supported_output_format();
         assert_eq!(
             supported_formats.len(),
-            15,
+            19,
             "wrong amount of supported output formats"
         );
     }
@@ -217,7 +217,7 @@ Au      1.442498    2.498480    0.000000";
 
         assert!(ob::OBForceField_is_setup_needed(&ff1, &mol));
 
-        ob::OBForceField_setup(&molgg, &ff1);
+        ob::OBForceField_setup(&mol, &ff1);
         assert!(ob::OBForceField_is_setup_needed(&ff1, &mol) == false);
 
         assert!(ob::OBForceField_is_setup_needed(&ff2, &mol));
