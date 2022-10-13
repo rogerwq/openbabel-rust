@@ -137,6 +137,7 @@ std::unique_ptr<OBForceField> OBForceField_find_forcefield(const std::string &ff
 }
 
 unsigned int OBForceField_setup(const std::unique_ptr<OBMol> & pMol, const std::unique_ptr<OBForceField> & pFF) {
+    pFF.get()->SetLogLevel(0);
     if (!pFF.get()->Setup(*pMol)) {
 	std::stringstream errorMsg;
 	errorMsg << "OBForceField->Setup() error" << std::endl;
