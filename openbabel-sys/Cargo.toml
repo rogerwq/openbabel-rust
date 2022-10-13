@@ -1,6 +1,6 @@
 [package]
 name = "openbabel-sys"
-version = "0.4.0+openbabel-3.1.1"
+version = "0.5.0+openbabel-3.1.1"
 edition = "2018"
 authors = ["Qin Wan <rogerwq@gmail.com>"]
 license = "MIT"
@@ -35,6 +35,9 @@ path = "src/lib.rs"
 
 [dependencies]
 cxx = "1.0"
+
+[dev-dependencies]
+tempfile = "3.3.0"
 
 [build-dependencies]
 cxx-build = "1.0"

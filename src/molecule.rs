@@ -7,9 +7,13 @@
 //!
 //! let mol = molecule::Molecule::new_from_smiles("c1ccccc1");
 //! assert_eq!(mol.num_atoms(), 6);
+//! assert_eq!(mol.num_bonds(), 6);
+//! assert_eq!(mol.num_hvy_atoms(), 6);
 //! ```
 
 use ob_rs::ob;
+use crate::io::conversion::Conversion;
+use crate::io::formats::OutputFormat;
 
 pub struct Molecule {
     pub ob_mol: cxx::UniquePtr<ob::OBMol>,
@@ -21,6 +25,13 @@ impl Molecule {
         Self {
             ob_mol: ob::OBMol_from_smiles(&smiles_cxx),
         }
+    }
+
+    /// Returns `ob_mol` as a [String](std::String) in the specified
+    /// [OutputFormat](crate::io::formats::OutputFormat) 
+    pub fn to_string(&self, conv: &Conversion, format: &OutputFormat) -> String {
+        conv.set_output_format(format);
+        ob::OBConversion_write_string(&conv.ob_conv, &self.ob_mol)
     }
 
     pub fn is_valid(&self) -> bool {
@@ -38,6 +49,10 @@ impl Molecule {
     pub fn get_mol_wt(&self) -> f64 {
         ob::OBMol_get_mol_wt(&self.ob_mol)
     }
+}
+
+pub trait ToMol {
+    fn to_mol(&self, conv: &Conversion) -> Result<Molecule, ()>;
 }
 
 #[cfg(test)]
