@@ -13,7 +13,7 @@ categories = ["science"]
 
 [dependencies]
 cxx = "1.0"
-ob_rs = { package = "openbabel-sys", path = "openbabel-sys" }
+ob_rs = { package = "openbabel-sys", version = "0.5.0", path = "openbabel-sys" }
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24"
 
