@@ -9,8 +9,8 @@ This file contains a binary representation of data tables
 ***************************************************************/
 
 
-#ifndef OB_SPACE-GROUPS_H
-#define OB_SPACE-GROUPS_H
+#ifndef OB_SPACE_GROUPS_H
+#define OB_SPACE_GROUPS_H
 
 namespace OpenBabel
 {

@@ -1,5 +1,5 @@
 extern crate openbabel;
-use chiral_db_fp_kind::openbabel::Kind;
+use openbabel::fingerprint::Kind;
 
 fn main() {
     let fpk = Kind::ECFP4 { nbits: 4096 };

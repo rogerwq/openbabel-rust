@@ -12,7 +12,7 @@
 //! ```
 //! use openbabel::fingerprint;
 //! use openbabel::molecule;
-//! use chiral_db_fp_kind::openbabel::Kind;
+//! use openbabel::fingerprint::Kind;
 //! 
 //! let fpg = fingerprint::FingerprintGenerator::new(Kind::ECFP4 { nbits: 2048 });
 //! 
@@ -36,7 +36,50 @@
 
 use ob_rs::ob;
 use super::molecule;
-use chiral_db_fp_kind::openbabel::Kind;
+
+#[derive(Clone, Debug)]
+pub enum Kind {
+    FP2 { nbits: u32 },
+    FP3 { nbits: u32 },
+    FP4 { nbits: u32 },
+    ECFP0 { nbits: u32 },
+    ECFP2 { nbits: u32 },
+    ECFP4 { nbits: u32 },
+    ECFP6 { nbits: u32 },
+    ECFP8 { nbits: u32 },
+    ECFP10 { nbits: u32 }
+}
+
+impl Kind {
+    fn as_str(&self) -> String {
+        let fp_name = match self {
+            Kind::FP2 { nbits: _ } => "FP2",
+            Kind::FP3 { nbits: _ } => "FP3",
+            Kind::FP4 { nbits: _ } => "FP4",
+            Kind::ECFP0 { nbits: _ } => "ECFP0",
+            Kind::ECFP2 { nbits: _ } => "ECFP2",
+            Kind::ECFP4 { nbits: _ } => "ECFP4",
+            Kind::ECFP6 { nbits: _ } => "ECFP6",
+            Kind::ECFP8 { nbits: _ } => "ECFP8",
+            Kind::ECFP10 { nbits: _ } => "ECFP10",
+        };
+        format!("{}", fp_name)
+    }
+
+    pub fn get_nbits(&self) -> &u32 {
+        match self {
+            Kind::FP2 { nbits } => nbits,
+            Kind::FP3 { nbits } => nbits,
+            Kind::FP4 { nbits } => nbits,
+            Kind::ECFP0 { nbits } => nbits,
+            Kind::ECFP2 { nbits } => nbits,
+            Kind::ECFP4 { nbits } => nbits,
+            Kind::ECFP6 { nbits } => nbits,
+            Kind::ECFP8 { nbits } => nbits,
+            Kind::ECFP10 { nbits } => nbits,
+        }
+    }
+}
 
 pub struct FingerprintGenerator {
     kind: Kind
