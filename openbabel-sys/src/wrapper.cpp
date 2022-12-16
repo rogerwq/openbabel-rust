@@ -248,10 +248,11 @@ unsigned int OBSmartsPattern_num_matches(const std::unique_ptr<OBSmartsPattern> 
 
 std::unique_ptr<std::vector<int>> OBSmartsPattern_match(const std::unique_ptr<OBSmartsPattern> & pSP, const std::unique_ptr<OBMol> & pMol) {
     pSP->Match(*pMol);
-    // CxxVector does not support nested C++ vector (std::vector<std::vector>)
+    // CxxVector does not support nested C++ vector (std::vector<std::vector>), use -1 as delimiter
     std::vector<int> result {};
     for (std::vector<std::vector<int>>::iterator i = pSP->GetMapList().begin(); i != pSP->GetMapList().end(); ++i) {
         result.insert(result.end(), i->begin(), i->end());
+        result.push_back(-1);
     }
 
     return std::make_unique<std::vector<int>>(std::move(result));

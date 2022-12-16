@@ -1,6 +1,6 @@
 [package]
 name = "openbabel"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2018"
 authors = ["Qin Wan <rogerwq@gmail.com>"]
 license = "MIT"
@@ -16,6 +16,7 @@ cxx = "1.0"
 ob_rs = { package = "openbabel-sys", version = "0.5.0", path = "openbabel-sys" }
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24"
+serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
 criterion = "0.3.5"
@@ -23,6 +24,10 @@ chiral-db-sources = "0.2.0"
 
 [[bench]]
 name = "fingerprint"
+harness = false
+
+[[bench]]
+name = "substructure"
 harness = false
 
 [[example]]

@@ -1,6 +1,7 @@
 use criterion;
 use openbabel;
 use chiral_db_sources;
+use openbabel::fingerprint::Kind;
 
 fn get_ecfp(smiles: &String, fpg: &openbabel::fingerprint::FingerprintGenerator) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
     let mol = openbabel::molecule::Molecule::new_from_smiles(smiles);
@@ -15,11 +16,9 @@ fn get_ecfp_for_mols(smiles_vec: &Vec<String>, fpg: &openbabel::fingerprint::Fin
 }
 
 fn criterion_benchmark(c: &mut criterion::Criterion) {
-    let fpg = openbabel::fingerprint::FingerprintGenerator::new(openbabel::fingerprint::Kind::ECFP4 { nbits: 2048 });
+    let fpg = openbabel::fingerprint::FingerprintGenerator::new(Kind::ECFP4 { nbits: 2048 });
     
-    let mut sc = chiral_db_sources::chembl::SourceChembl::new();
-    sc.load();
-
+    let sc = chiral_db_sources::chembl::SourceChembl::new_default();
     c.bench_function("ECFP4 fingerprint generation - 1 mol", |b| b.iter(|| get_ecfp(criterion::black_box(&String::from("c1ccccc1N")), &fpg))); 
     for &count in vec![100, 200, 500, 1000].iter() {
         let smiles: Vec<String> = sc.choices(count).iter()
@@ -34,7 +33,6 @@ fn criterion_benchmark(c: &mut criterion::Criterion) {
     //     group.throughput(Throughput::Bytes(idx as u64));
     //     group.bench_with_input(BenchmarkId::from_parameter(idx), &smiles, |b, s| b.iter(|| get_ecfp(s, &kind_ecfp4)));
     // }
-
 }
 
 
