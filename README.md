@@ -33,3 +33,9 @@ This repository is composed of two packages:
 - Openbabel [documentation](http://openbabel.org/wiki/Main_Page)
 - [Substructure Searching](http://openbabel.org/dev-api/group__substructure.shtml)
 - [OBSmartsPattern Class Reference](http://openbabel.org/dev-api/classOpenBabel_1_1OBSmartsPattern.shtml)
+
+
+### Logs
+
+### v0.5.1
+- smartspattern.rs: find_match() return ```Vec<Vec<...>>```

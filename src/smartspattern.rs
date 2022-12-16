@@ -12,7 +12,7 @@
 //! assert_eq!(sp.num_bonds(), 3);
 //! let match_result = sp.find_match(&mol);
 //! assert_eq!(sp.num_matches(), 1);
-//! assert_eq!(vec![4, 3, 5, 6], match_result.as_slice());
+//! assert_eq!(vec![vec![4, 3, 5, 6]], match_result.as_slice());
 //! ```
 
 use ob_rs::ob;
@@ -32,8 +32,15 @@ impl SmartsPattern {
     pub fn num_bonds(&self) -> u32 { ob::OBSmartsPattern_num_bonds(&self.ob_sp) }
     pub fn num_matches(&self) -> u32 { ob::OBSmartsPattern_num_matches(&self.ob_sp) }
 
-    pub fn find_match(&self, mol: &molecule::Molecule) -> cxx::UniquePtr<cxx::CxxVector<i32>> { // 'match' is keyword in rust, use 'find_match' instead
+    // pub fn find_match(&self, mol: &molecule::Molecule) -> cxx::UniquePtr<cxx::CxxVector<i32>> { // 'match' is keyword in rust, use 'find_match' instead
+    pub fn find_match(&self, mol: &molecule::Molecule) -> Vec<Vec<i32>> { // 'match' is keyword in rust, use 'find_match' instead
         ob::OBSmartsPattern_match(&self.ob_sp, &mol.ob_mol)
+            .as_slice()
+            // .iter()
+            .split(|&i| i == -1)
+            .filter(|v| v.len() > 0)
+            .map(|v| v.to_vec())
+            .collect::<Vec<Vec<i32>>>()
     }
 }
 
@@ -43,12 +50,20 @@ mod test_mod_smartspattern {
 
     #[test]
     fn test_match() {
-        let mol = molecule::Molecule::new_from_smiles("NCC(=O)NCC");
         let sp = SmartsPattern::new_from_smarts("O=CN*");
         assert_eq!(sp.num_atoms(), 4);
         assert_eq!(sp.num_bonds(), 3);
-        let match_result = sp.find_match(&mol);
+        let mol_1 = molecule::Molecule::new_from_smiles("NCC(=O)NCC");
+        let match_result_1 = sp.find_match(&mol_1);
         assert_eq!(sp.num_matches(), 1);
-        assert_eq!(vec![4, 3, 5, 6], match_result.as_slice());
+        assert_eq!(vec![vec![4, 3, 5, 6]], match_result_1);
+        let mol_2 = molecule::Molecule::new_from_smiles("NCCNCC");
+        let match_result_2 = sp.find_match(&mol_2);
+        assert_eq!(sp.num_matches(), 0);
+        assert_eq!(0, match_result_2.as_slice().len());
+        let mol_3 = molecule::Molecule::new_from_smiles("CNC(=O)C(=O)NCC");
+        let match_result_3 = sp.find_match(&mol_3);
+        assert_eq!(sp.num_matches(), 2);
+        assert_eq!(vec![vec![4, 3, 2, 1], vec![6, 5, 7, 8]], match_result_3.as_slice());
     }
 }

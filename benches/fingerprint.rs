@@ -1,7 +1,7 @@
 use criterion;
 use openbabel;
 use chiral_db_sources;
-use chiral_db_fp_kind::openbabel::Kind;
+use openbabel::fingerprint::Kind;
 
 fn get_ecfp(smiles: &String, fpg: &openbabel::fingerprint::FingerprintGenerator) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
     let mol = openbabel::molecule::Molecule::new_from_smiles(smiles);

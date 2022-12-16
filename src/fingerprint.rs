@@ -24,7 +24,7 @@
 //! let seroquel = String::from("N1=C(c3c(Sc2c1cccc2)cccc3)N4CCN(CCOCCO)CC4");
 //! let lipitor = String::from("O=C(O)C[C@H](O)C[C@H](O)CCn2c(c(c(c2c1ccc(F)cc1)c3ccccc3)C(=O)Nc4ccccc4)C(C)C");
 //! let tylenol = String::from("CC(=O)Nc1ccc(O)cc1");
-//! let smiles_vec = vec![&aspirin, &seroquel, &lipitor, &tylenol];
+//! let smiles_vec = vec![aspirin, seroquel, lipitor, tylenol];
 //! 
 //! let fpd_of_mols = fpg.get_fingerprint_for_smiles_vec(&smiles_vec);
 //! assert_eq!(fpd_of_mols.len(), 4);
@@ -36,8 +36,9 @@
 
 use ob_rs::ob;
 use super::molecule;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub enum Kind {
     FP2 { nbits: u32 },
     FP3 { nbits: u32 },
@@ -90,15 +91,18 @@ impl FingerprintGenerator {
         Self { kind }
     }
 
-    pub fn get_fingerprint(&self, mol: &molecule::Molecule) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
+    // pub fn get_fingerprint(&self, mol: &molecule::Molecule) -> cxx::UniquePtr<cxx::CxxVector<u32>> {
+    pub fn get_fingerprint(&self, mol: &molecule::Molecule) -> Vec<u32> {
         cxx::let_cxx_string!(fp_name = &self.kind.as_str());
         ob::OBFingerprint_get_fingerprint(&fp_name, &mol.ob_mol, *self.kind.get_nbits()) // If nbits <=0, nbits = 4096
+            .iter().cloned().collect()
     }
 
-    pub fn get_fingerprint_for_smiles_vec(&self, smiles_vec: &Vec<&String>) -> Vec<cxx::UniquePtr<cxx::CxxVector<u32>>> {
+    pub fn get_fingerprint_for_smiles_vec(&self, smiles_vec: &Vec<String>) -> Vec<Vec<u32>> {
         smiles_vec.iter()
             .map(|smiles| {
                 let mol = molecule::Molecule::new_from_smiles(smiles);
+                // self.get_fingerprint(&mol).iter().cloned().collect()
                 self.get_fingerprint(&mol)
             })
             .collect()
@@ -151,7 +155,7 @@ mod test_mod_fingerprint {
         let smiles_1 = String::from("CCNCC");
         let smiles_2 = String::from("c1ccccc1");
         let smiles_vec = vec![
-            &smiles_1, &smiles_2
+            smiles_1, smiles_2
         ];
         for fpk in vec![
             Kind::FP2 { nbits: 4096 },
