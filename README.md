@@ -9,11 +9,12 @@ This repository is composed of two packages:
 - openbabel-sys: FFI to OpenBabel C++ codes.
 - openbabel: Rust wrappers for easy usage.
 
-***multi-thread mode will encounter memory issue and unexpected exit from time to time***
-***Currently not working under Windows***
-***Low-version C++ compiler could lead to unexpected compiling warnings***
+*** Attentions ***
+- multi-thread mode will encounter memory issue and unexpected exit from time to time***
+- Currently not working under Windows***
+- Low-version C++ compiler could lead to unexpected compiling warnings***
 
-## Binding Progress
+## Wrapping Progress
 
 :white_check_mark: OBConversion
 
@@ -25,17 +26,13 @@ This repository is composed of two packages:
 
 :white_check_mark: OBForceField
 
+## Logs
+### v0.5
+- v0.5.2: smartsparttern.rs: add a test case of symmetric query
+- v0.5.1: smartspattern.rs: find_match() return ```Vec<Vec<...>>```
 
 ## References
 - Code structure: [libcurl bindings for Rust](https://github.com/alexcrichton/curl-rust)
-
-### OpenBabel 
 - Openbabel [documentation](http://openbabel.org/wiki/Main_Page)
 - [Substructure Searching](http://openbabel.org/dev-api/group__substructure.shtml)
 - [OBSmartsPattern Class Reference](http://openbabel.org/dev-api/classOpenBabel_1_1OBSmartsPattern.shtml)
-
-
-### Logs
-
-### v0.5.1
-- smartspattern.rs: find_match() return ```Vec<Vec<...>>```
