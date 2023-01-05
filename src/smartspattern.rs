@@ -65,5 +65,11 @@ mod test_mod_smartspattern {
         let match_result_3 = sp.find_match(&mol_3);
         assert_eq!(sp.num_matches(), 2);
         assert_eq!(vec![vec![4, 3, 2, 1], vec![6, 5, 7, 8]], match_result_3.as_slice());
+        // query smarts is symmetric
+        let sp_4 = SmartsPattern::new_from_smarts("c1ccccc1N=O");
+        let mol_4 = molecule::Molecule::new_from_smiles("COc1cc([N+](=O)[O-])c(OC)cc1CC(C)N");
+        let match_result_4 = sp_4.find_match(&mol_4);
+        assert_eq!(sp_4.num_matches(), 2);
+        assert_eq!(vec![vec![4, 3, 13, 12, 9, 5, 6, 7], vec![9, 12, 13, 3, 4, 5, 6, 7]], match_result_4.as_slice());
     }
 }
