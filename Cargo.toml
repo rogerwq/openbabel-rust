@@ -1,6 +1,6 @@
 [package]
 name = "openbabel"
-version = "0.5.2"
+version = "0.5.3"
 edition = "2018"
 authors = ["Qin Wan <rogerwq@gmail.com>"]
 license = "MIT"
@@ -13,7 +13,7 @@ categories = ["science"]
 
 [dependencies]
 cxx = "1.0"
-ob_rs = { package = "openbabel-sys", version = "0.5.0", path = "openbabel-sys" }
+ob_rs = { package = "openbabel-sys", version = "0.5.3", path = "openbabel-sys" }
 strum = { version = "0.24", features = ["derive"] }
 strum_macros = "0.24"
 serde = { version = "1.0", features = ["derive"] }
