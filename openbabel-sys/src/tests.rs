@@ -56,8 +56,8 @@ Au      1.442498    2.498480    0.000000";
         cxx::let_cxx_string!(smiles = "NCC(=O)NCC");
         let mol = ob::OBMol_from_smiles(&smiles);
         let test_data: Vec<(String, (u32, u32, u32, Vec<i32>))> = vec![
-            (String::from("O=CN"), (3, 2, 1, vec![4, 3, 5])),
-            (String::from("CN"), (2, 1, 3, vec![2, 1, 3, 5, 6, 5])),
+            (String::from("O=CN"), (3, 2, 1, vec![4, 3, 5, -1])),
+            (String::from("CN"), (2, 1, 3, vec![2, 1, -1, 3, 5, -1, 6, 5, -1])),
         ];
 
         for (s, (num_atoms, num_bonds, num_match, match_indexes)) in test_data.iter() {

@@ -32,11 +32,9 @@ impl SmartsPattern {
     pub fn num_bonds(&self) -> u32 { ob::OBSmartsPattern_num_bonds(&self.ob_sp) }
     pub fn num_matches(&self) -> u32 { ob::OBSmartsPattern_num_matches(&self.ob_sp) }
 
-    // pub fn find_match(&self, mol: &molecule::Molecule) -> cxx::UniquePtr<cxx::CxxVector<i32>> { // 'match' is keyword in rust, use 'find_match' instead
     pub fn find_match(&self, mol: &molecule::Molecule) -> Vec<Vec<i32>> { // 'match' is keyword in rust, use 'find_match' instead
         ob::OBSmartsPattern_match(&self.ob_sp, &mol.ob_mol)
             .as_slice()
-            // .iter()
             .split(|&i| i == -1)
             .filter(|v| v.len() > 0)
             .map(|v| v.to_vec())
@@ -65,7 +63,7 @@ mod test_mod_smartspattern {
         let match_result_3 = sp.find_match(&mol_3);
         assert_eq!(sp.num_matches(), 2);
         assert_eq!(vec![vec![4, 3, 2, 1], vec![6, 5, 7, 8]], match_result_3.as_slice());
-        // query smarts is symmetric
+        // symmetric query smarts 
         let sp_4 = SmartsPattern::new_from_smarts("c1ccccc1N=O");
         let mol_4 = molecule::Molecule::new_from_smiles("COc1cc([N+](=O)[O-])c(OC)cc1CC(C)N");
         let match_result_4 = sp_4.find_match(&mol_4);
