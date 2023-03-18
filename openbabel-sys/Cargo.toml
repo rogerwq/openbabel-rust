@@ -42,3 +42,5 @@ tempfile = "3.3.0"
 [build-dependencies]
 cxx-build = "1.0"
 fs_extra = "1.2.0"
+regex = "1"
+walkdir = "2"

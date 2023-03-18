@@ -17,5 +17,6 @@ Cargo.lock
 /target
 
 openbabel-sys/target
+openbabel-sys/openbabel-patch
 .DS_Store
 .vscode

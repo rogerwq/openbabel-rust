@@ -50,6 +50,7 @@
 //! OBSmartsPattern_num_matches <-> OBSmartsPattern::NumMatches
 //! OBSmartsPattern_match <-> OBSmartsPattern::Match
 
+
 #[cxx::bridge(namespace = "OpenBabel")]
 pub mod ob {
     unsafe extern "C++" {

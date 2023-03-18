@@ -1,3 +1,5 @@
+use std::io::Write;
+
 fn main() {
     let version = "3.1.1";
     // let target = std::env::var("TARGET").unwrap();
@@ -44,85 +46,120 @@ fn main() {
             .replace("@OB_SHARED_PTR_HEADER@", "memory")
     ).unwrap();
 
+    // patch 
+    let dir_ob_patch = std::path::Path::new("openbabel-patch");
+    if !dir_ob_patch.exists() {
+        // copy all file in "include" & src
+        std::fs::create_dir(&dir_ob_patch).unwrap();
+        let dir_ob = std::path::Path::new("openbabel");
+        fs_extra::dir::copy(dir_ob.join("include").to_str().unwrap(), dir_ob_patch.to_str().unwrap(), &fs_extra::dir::CopyOptions::new()).unwrap();
+        fs_extra::dir::copy(dir_ob.join("src"), dir_ob_patch.to_str().unwrap(), &fs_extra::dir::CopyOptions::new()).unwrap();
+
+        //  Patch by replacing
+        for entry in walkdir::WalkDir::new(std::path::PathBuf::from("openbabel-patch")) {
+            let entry = entry.unwrap();
+            match entry.path().extension() {
+                Some(ext) => {
+                    if ext == "cpp" || ext == "h" {
+                        let file_content = std::fs::read_to_string(entry.path()).unwrap();
+                        let re = regex::Regex::new(r"OBMessageHandler obErrorLog").unwrap();
+                        let after = re.replace_all(file_content.as_str(), "thread_local OBMessageHandler obErrorLog");
+                        let mut file = std::fs::File::create(entry.path()).unwrap();
+                        file.write(after.as_bytes()).unwrap();
+                    }
+                }
+                None => ()
+            }
+        }
+
+        //  Patch by overwriting 
+        let dir_ob_extra = std::path::Path::new("openbabel-extra");
+        let mut copy_option = fs_extra::dir::CopyOptions::new();
+        copy_option.overwrite = true;
+        fs_extra::dir::copy(dir_ob_extra.join("include").to_str().unwrap(), dir_ob_patch.to_str().unwrap(), &copy_option).unwrap();
+    }
+
+
+
     // Compiling
     cxx_build::bridge("src/lib.rs")
-        .file("openbabel/src/base.cpp")
-        .file("openbabel/src/atom.cpp")
-        .file("openbabel/src/bond.cpp")
-        .file("openbabel/src/oberror.cpp")
-        .file("openbabel/src/tokenst.cpp")
-        .file("openbabel/src/generic.cpp")
-        .file("openbabel/src/rand.cpp")
-        .file("openbabel/src/graphsym.cpp")
-        .file("openbabel/src/ring.cpp")
-        .file("openbabel/src/phmodel.cpp")
-        .file("openbabel/src/obiter.cpp")
-        .file("openbabel/src/builder.cpp")
-        .file("openbabel/src/plugin.cpp")
-        .file("openbabel/src/data.cpp")
-        .file("openbabel/src/locale.cpp")
-        .file("openbabel/src/obutil.cpp")
-        .file("openbabel/src/descriptor.cpp")
-        .file("openbabel/src/elements.cpp")
-        .file("openbabel/src/typer.cpp")
-        .file("openbabel/src/chains.cpp")
-        .file("openbabel/src/bitvec.cpp")
-        .file("openbabel/src/parsmart.cpp")
-        .file("openbabel/src/residue.cpp")
-        .file("openbabel/src/mol.cpp")
-        .file("openbabel/src/transform.cpp")
-        .file("openbabel/src/obconversion.cpp")
-        .file("openbabel/src/format.cpp")
-        .file("openbabel/src/obmolecformat.cpp")
-        .file("openbabel/src/reactionfacade.cpp")
-        .file("openbabel/src/kekulize.cpp")
-        .file("openbabel/src/canon.cpp")
-        .file("openbabel/src/obfunctions.cpp")
-        .file("openbabel/src/griddata.cpp")
-        .file("openbabel/src/grid.cpp")
-        .file("openbabel/src/bondtyper.cpp")
-        .file("openbabel/src/stereo/cistrans.cpp")
-        .file("openbabel/src/stereo/tetrahedral.cpp")
-        .file("openbabel/src/stereo/tetranonplanar.cpp")
-        .file("openbabel/src/stereo/stereo.cpp")
-        .file("openbabel/src/stereo/perception.cpp")
-        .file("openbabel/src/stereo/facade.cpp")
-        .file("openbabel/src/stereo/squareplanar.cpp")
-        .file("openbabel/src/stereo/tetraplanar.cpp")
-        .file("openbabel/src/math/vector3.cpp")
-        .file("openbabel/src/math/matrix3x3.cpp")
-        .file("openbabel/src/math/spacegroup.cpp")
-        .file("openbabel/src/math/transform3d.cpp")
-        .file("openbabel/src/fingerprints/finger2.cpp")
-        .file("openbabel/src/fingerprints/finger3.cpp")
-        .file("openbabel/src/fingerprints/fingerecfp.cpp")
-        .file("openbabel/src/fingerprint.cpp")
-        .file("openbabel/src/forcefields/forcefielduff.cpp")
-        .file("openbabel/src/forcefields/forcefieldgaff.cpp")
-        .file("openbabel/src/forcefields/forcefieldmmff94.cpp")
-        .file("openbabel/src/forcefields/forcefieldghemical.cpp")
-        .file("openbabel/src/forcefield.cpp")
-        .file("openbabel/src/molchrg.cpp")
-        // .file("openbabel/src/forcefields/forcefieldmm2.cpp")  // compilation error when added
-        .file("openbabel/src/formats/smilesformat.cpp")
-        .file("openbabel/src/formats/xyzformat.cpp")
-        .file("openbabel/src/formats/gaussformat.cpp")
-        .file("openbabel/src/formats/gausscubeformat.cpp")
-        .file("openbabel/src/formats/gausszmatformat.cpp")
-        .file("openbabel/src/formats/fchkformat.cpp")
-        .file("openbabel/src/formats/turbomoleformat.cpp")
-        .file("openbabel/src/formats/daltonformat.cpp")
-        .file("openbabel/src/formats/orcaformat.cpp")
-        .file("openbabel/src/formats/siestaformat.cpp")
-        .file("openbabel/src/formats/mdlformat.cpp")
-        .file("openbabel/src/alias.cpp")
-        .file("openbabel/src/mcdlutil.cpp")
+        .file("openbabel-patch/src/base.cpp")
+        .file("openbabel-patch/src/atom.cpp")
+        .file("openbabel-patch/src/bond.cpp")
+        .file("openbabel-patch/src/oberror.cpp")
+        .file("openbabel-patch/src/tokenst.cpp")
+        .file("openbabel-patch/src/generic.cpp")
+        .file("openbabel-patch/src/rand.cpp")
+        .file("openbabel-patch/src/graphsym.cpp")
+        .file("openbabel-patch/src/ring.cpp")
+        .file("openbabel-patch/src/phmodel.cpp")
+        .file("openbabel-patch/src/obiter.cpp")
+        .file("openbabel-patch/src/builder.cpp")
+        .file("openbabel-patch/src/plugin.cpp")
+        .file("openbabel-patch/src/data.cpp")
+        .file("openbabel-patch/src/locale.cpp")
+        .file("openbabel-patch/src/obutil.cpp")
+        .file("openbabel-patch/src/descriptor.cpp")
+        .file("openbabel-patch/src/elements.cpp")
+        .file("openbabel-patch/src/typer.cpp")
+        .file("openbabel-patch/src/chains.cpp")
+        .file("openbabel-patch/src/bitvec.cpp")
+        .file("openbabel-patch/src/parsmart.cpp")
+        .file("openbabel-patch/src/residue.cpp")
+        .file("openbabel-patch/src/mol.cpp")
+        .file("openbabel-patch/src/transform.cpp")
+        .file("openbabel-patch/src/obconversion.cpp")
+        .file("openbabel-patch/src/format.cpp")
+        .file("openbabel-patch/src/obmolecformat.cpp")
+        .file("openbabel-patch/src/reactionfacade.cpp")
+        .file("openbabel-patch/src/kekulize.cpp")
+        .file("openbabel-patch/src/canon.cpp")
+        .file("openbabel-patch/src/obfunctions.cpp")
+        .file("openbabel-patch/src/griddata.cpp")
+        .file("openbabel-patch/src/grid.cpp")
+        .file("openbabel-patch/src/bondtyper.cpp")
+        .file("openbabel-patch/src/stereo/cistrans.cpp")
+        .file("openbabel-patch/src/stereo/tetrahedral.cpp")
+        .file("openbabel-patch/src/stereo/tetranonplanar.cpp")
+        .file("openbabel-patch/src/stereo/stereo.cpp")
+        .file("openbabel-patch/src/stereo/perception.cpp")
+        .file("openbabel-patch/src/stereo/facade.cpp")
+        .file("openbabel-patch/src/stereo/squareplanar.cpp")
+        .file("openbabel-patch/src/stereo/tetraplanar.cpp")
+        .file("openbabel-patch/src/math/vector3.cpp")
+        .file("openbabel-patch/src/math/matrix3x3.cpp")
+        .file("openbabel-patch/src/math/spacegroup.cpp")
+        .file("openbabel-patch/src/math/transform3d.cpp")
+        .file("openbabel-patch/src/fingerprints/finger2.cpp")
+        .file("openbabel-patch/src/fingerprints/finger3.cpp")
+        .file("openbabel-patch/src/fingerprints/fingerecfp.cpp")
+        .file("openbabel-patch/src/fingerprint.cpp")
+        .file("openbabel-patch/src/forcefields/forcefielduff.cpp")
+        .file("openbabel-patch/src/forcefields/forcefieldgaff.cpp")
+        .file("openbabel-patch/src/forcefields/forcefieldmmff94.cpp")
+        .file("openbabel-patch/src/forcefields/forcefieldghemical.cpp")
+        .file("openbabel-patch/src/forcefield.cpp")
+        .file("openbabel-patch/src/molchrg.cpp")
+        // .file("openbabel-patch/src/forcefields/forcefieldmm2.cpp")  // compilation error when added
+        .file("openbabel-patch/src/formats/smilesformat.cpp")
+        .file("openbabel-patch/src/formats/xyzformat.cpp")
+        .file("openbabel-patch/src/formats/gaussformat.cpp")
+        .file("openbabel-patch/src/formats/gausscubeformat.cpp")
+        .file("openbabel-patch/src/formats/gausszmatformat.cpp")
+        .file("openbabel-patch/src/formats/fchkformat.cpp")
+        .file("openbabel-patch/src/formats/turbomoleformat.cpp")
+        .file("openbabel-patch/src/formats/daltonformat.cpp")
+        .file("openbabel-patch/src/formats/orcaformat.cpp")
+        .file("openbabel-patch/src/formats/siestaformat.cpp")
+        .file("openbabel-patch/src/formats/mdlformat.cpp")
+        .file("openbabel-patch/src/alias.cpp")
+        .file("openbabel-patch/src/mcdlutil.cpp")
         .file("src/wrapper.cpp")
         .include(include)
         .include("src")
         .include("src/data")
-        .include("openbabel/include")
-        .include("openbabel/src/formats") // smilesvalence.h
+        .include("openbabel-patch/include")
+        .include("openbabel-patch/src/formats") // smilesvalence.h
         .flag_if_supported("-std=c++14")
         .flag_if_supported("-Wno-unused-parameter")
         .flag_if_supported("-Wno-unused-function")
