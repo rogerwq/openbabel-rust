@@ -1,5 +1,23 @@
 use std::io::Write;
 
+fn replace_pattern(content: &str, pattern: &str, replacement: &str) -> String {
+    let re = regex::Regex::new(pattern).unwrap();
+    let after = re.replace_all(content, replacement);
+    after.to_string()
+}
+
+fn remove_header_file(content: &str, include_header: &str) -> String {
+    let re = regex::Regex::new(format!("(?P<h>{include_header})").as_str()).unwrap();
+    let after = re.replace_all(content, "/** $h **/");
+    after.to_string()
+}
+
+fn remove_function(content: &str, name: &str, lines: usize) -> String {
+    let re = regex::Regex::new(format!("(?P<c>{name}\\(.*\\n(.*\\n){{{lines}}})").as_str()).unwrap();
+    let after = re.replace_all(content, "/** $c **/");
+    after.to_string()
+}
+
 fn main() {
     let version = "3.1.1";
     // let target = std::env::var("TARGET").unwrap();
@@ -12,11 +30,11 @@ fn main() {
         std::fs::create_dir(&include).unwrap();
     }
 
-    // if !std::path::Path::new("openbabel/.git").exists() {
-    //     match std::process::Command::new("git")
-    //         .args(&["submodule", "update", "--init"])
-    //         .status().unwrap();
-    // }
+    if !std::path::Path::new("openbabel/.git").exists() {
+        std::process::Command::new("git")
+            .args(&["submodule", "update", "--init"])
+            .status().unwrap();
+    }
 
     // copy data directory
     let data_ob = dst.join("data").join(&version);
@@ -48,118 +66,150 @@ fn main() {
 
     // patch 
     let dir_ob_patch = std::path::Path::new("openbabel-patch");
-    if !dir_ob_patch.exists() {
-        // copy all file in "include" & src
-        std::fs::create_dir(&dir_ob_patch).unwrap();
-        let dir_ob = std::path::Path::new("openbabel");
-        fs_extra::dir::copy(dir_ob.join("include").to_str().unwrap(), dir_ob_patch.to_str().unwrap(), &fs_extra::dir::CopyOptions::new()).unwrap();
-        fs_extra::dir::copy(dir_ob.join("src"), dir_ob_patch.to_str().unwrap(), &fs_extra::dir::CopyOptions::new()).unwrap();
+    if dir_ob_patch.exists() {
+        std::fs::remove_dir_all(dir_ob_patch).unwrap();
+    }
+    std::fs::create_dir(&dir_ob_patch).unwrap();
+    let dir_ob_patch_include = dir_ob_patch.join("include").join("openbabel");
+    let dir_ob_patch_src = dir_ob_patch.join("src");
+    std::fs::create_dir_all(&dir_ob_patch_include).unwrap();
+    std::fs::create_dir(&dir_ob_patch_src).unwrap();
 
-        //  Patch by replacing
-        for entry in walkdir::WalkDir::new(std::path::PathBuf::from("openbabel-patch")) {
-            let entry = entry.unwrap();
-            match entry.path().extension() {
-                Some(ext) => {
-                    if ext == "cpp" || ext == "h" {
-                        let file_content = std::fs::read_to_string(entry.path()).unwrap();
-                        let re = regex::Regex::new(r"OBMessageHandler obErrorLog").unwrap();
-                        let after = re.replace_all(file_content.as_str(), "thread_local OBMessageHandler obErrorLog");
-                        let mut file = std::fs::File::create(entry.path()).unwrap();
-                        file.write(after.as_bytes()).unwrap();
-                    }
-                }
-                None => ()
-            }
+    // list of files to be moved
+    let source_files: Vec<(&str, &str, bool)> = vec![
+        ("", "atom", true),
+        ("", "alias", true),
+        ("", "bond", true),
+        ("", "bitvec", true),
+        ("", "base", true), 
+        ("", "builder", true), 
+        ("", "bondtyper", false), 
+        ("", "canon", true), 
+        ("", "chains", true), 
+        ("", "data", true), 
+        ("", "data_utilities", false),  // no cpp file
+        ("", "descriptor", true), // plugin related class
+        ("", "distgeom", true), 
+        ("", "elements", true),
+        ("", "format", true), // plugin releated class 
+        ("", "forcefield", true), // plugin releated class 
+        ("", "generic", true), 
+        ("", "graphsym", true), 
+        ("", "internalcoord", false), 
+        ("", "isomorphism", false), 
+        ("", "kekulize", true), 
+        ("", "lineend", false),  // no cpp file
+        ("", "locale", true),
+        ("", "mcdlutil", true),
+        ("", "mol", true),
+        ("", "molchrg", false),
+        ("", "op", true), // plugin related class
+        ("", "obconversion", true), // .h .cpp modified
+        ("", "oberror", true),
+        ("", "obutil", true),
+        ("", "obiter", true),
+        ("", "obfunctions", true),
+        ("", "obmolecformat", true),
+        ("", "parsmart", true),
+        ("", "phmodel", true),
+        ("", "rand", true), // no header file 
+        ("", "reaction", false), // no cpp file
+        ("", "reactionfacade", true),
+        ("", "ring", true),
+        ("", "rotamer", false),
+        ("", "rotor", false),
+        ("", "residue", true),
+        ("", "shared_ptr", false), // no cpp file
+        ("", "typer", true),
+        ("", "tokenst", true), 
+        ("", "text", false), // no cpp file
+        ("", "transform", true), // no header file 
+        ("math", "vector3", true),
+        ("math", "spacegroup", false),
+        ("math", "transform3d", false),
+        ("math", "matrix3x3", true),
+        ("stereo", "stereo", true),
+        ("stereo", "cistrans", true),
+        ("stereo", "tetraplanar", true),
+        ("stereo", "tetranonplanar", true),
+        ("stereo", "tetrahedral", true),
+        ("stereo", "squareplanar", true),
+        ("stereo", "perception", true), // no header file
+        ("stereo", "facade", true), // no header file
+        ("depict", "painter", false),
+        ("depict", "svgpainter", true),
+        // ("depict", "depict", true),
+        ("formats", "smilesformat", true),
+        // ("formats", "svgformat", true),
+        // ("ops", "gen2D", true)
+    ];
+
+    // copy selected files
+    let dir_ob = std::path::Path::new("openbabel");
+    let dir_ob_include = dir_ob.join("include").join("openbabel");
+    let dir_ob_src = dir_ob.join("src");
+    for (dir_str, fn_str, copy_cpp) in source_files.iter() {
+        let dir_include = dir_ob_patch_include.join(dir_str);
+        let dir_src = dir_ob_patch_src.join(dir_str);
+        let header_file_path = dir_ob_include.join(dir_str).join(format!("{}.h", fn_str));
+        if header_file_path.exists() {
+            std::fs::create_dir_all(&dir_include).unwrap();
+            std::fs::copy(header_file_path, &dir_include.join(format!("{}.h", fn_str))).unwrap();
         }
-
-        //  Patch by overwriting 
-        let dir_ob_extra = std::path::Path::new("openbabel-extra");
-        let mut copy_option = fs_extra::dir::CopyOptions::new();
-        copy_option.overwrite = true;
-        fs_extra::dir::copy(dir_ob_extra.join("include").to_str().unwrap(), dir_ob_patch.to_str().unwrap(), &copy_option).unwrap();
+        if *copy_cpp {
+            std::fs::create_dir_all(&dir_src).unwrap();
+            std::fs::copy(dir_ob_src.join(dir_str).join(format!("{}.cpp", fn_str)), &dir_src.join(format!("{}.cpp", fn_str))).unwrap();
+        }
     }
 
+    //  Patch by replacing
+    for entry in walkdir::WalkDir::new(std::path::PathBuf::from("openbabel-patch")) {
+        let entry = entry.unwrap();
+        match entry.path().extension() {
+            Some(ext) => {
+                if ext == "cpp" || ext == "h" {
+                    let file_content = std::fs::read_to_string(entry.path()).unwrap();
+                    let mut after = file_content;
+                    // remove plugins
+                    after = remove_header_file(after.as_str(), "#include <openbabel/plugin.h>");
+                    after = replace_pattern(after.as_str(), r"(?P<c>MAKE_PLUGIN\(.+\);*)", "/** $c **/");
+                    after = replace_pattern(after.as_str(), r"(?P<c>: public OBPlugin)", "/** $c **/");
+                    after = remove_function(after.as_str(), "static PluginMapType &FormatsMIMEMap", 4);
+                    after = replace_pattern(after.as_str(), r"(?P<c>typedef OBPlugin::PluginIterator Formatpos;)", "/** $c **/");
+                    after = replace_pattern(after.as_str(), r"(?P<c>static bool\s+GetNextFormat\(.*\);)", "/** $c **/");
 
+                    if entry.file_name().to_str().unwrap() == "descriptor.h" {
+                        after = replace_pattern(after.as_str(), r"(?P<c>const char\* TypeID\(\)\{.*\};)", "static OBDescriptor* FindType(const char* ID);\n$c");
+                    }
+                    if entry.file_name().to_str().unwrap() == "format.h" {
+                        after = replace_pattern(after.as_str(), r"(?P<c>class OBCONV OBFormat.*\{.|\n*public:)", "$c\nstatic OBFormat* FindType(const char* ID);");
+                    }
+                    if entry.file_name().to_str().unwrap() == "forcefield.h" {
+                        after = replace_pattern(after.as_str(), r"(?P<c>virtual OBForceField\* MakeNewInstance\(\)=0;)", "$c\nstatic OBForceField* FindType(const char* ID);");
+                    }
+                    if entry.file_name().to_str().unwrap() == "op.h" {
+                        after = remove_function(after.as_str(), "static std::string OpOptions", 21);
+                        after = replace_pattern(after.as_str(), r"(?P<c>typedef const std::map<std::string, std::string> OpMap)", "static OBOp* FindType(const char* ID);\n$c");
+                    }
+
+                    let mut file = std::fs::File::create(entry.path()).unwrap();
+                    file.write(after.as_bytes()).unwrap();
+                }
+            }
+            None => ()
+        }
+    }
 
     // Compiling
     cxx_build::bridge("src/lib.rs")
-        .file("openbabel-patch/src/base.cpp")
-        .file("openbabel-patch/src/atom.cpp")
-        .file("openbabel-patch/src/bond.cpp")
-        .file("openbabel-patch/src/oberror.cpp")
-        .file("openbabel-patch/src/tokenst.cpp")
-        .file("openbabel-patch/src/generic.cpp")
-        .file("openbabel-patch/src/rand.cpp")
-        .file("openbabel-patch/src/graphsym.cpp")
-        .file("openbabel-patch/src/ring.cpp")
-        .file("openbabel-patch/src/phmodel.cpp")
-        .file("openbabel-patch/src/obiter.cpp")
-        .file("openbabel-patch/src/builder.cpp")
-        .file("openbabel-patch/src/plugin.cpp")
-        .file("openbabel-patch/src/data.cpp")
-        .file("openbabel-patch/src/locale.cpp")
-        .file("openbabel-patch/src/obutil.cpp")
-        .file("openbabel-patch/src/descriptor.cpp")
-        .file("openbabel-patch/src/elements.cpp")
-        .file("openbabel-patch/src/typer.cpp")
-        .file("openbabel-patch/src/chains.cpp")
-        .file("openbabel-patch/src/bitvec.cpp")
-        .file("openbabel-patch/src/parsmart.cpp")
-        .file("openbabel-patch/src/residue.cpp")
-        .file("openbabel-patch/src/mol.cpp")
-        .file("openbabel-patch/src/transform.cpp")
-        .file("openbabel-patch/src/obconversion.cpp")
-        .file("openbabel-patch/src/format.cpp")
-        .file("openbabel-patch/src/obmolecformat.cpp")
-        .file("openbabel-patch/src/reactionfacade.cpp")
-        .file("openbabel-patch/src/kekulize.cpp")
-        .file("openbabel-patch/src/canon.cpp")
-        .file("openbabel-patch/src/obfunctions.cpp")
-        .file("openbabel-patch/src/griddata.cpp")
-        .file("openbabel-patch/src/grid.cpp")
-        .file("openbabel-patch/src/bondtyper.cpp")
-        .file("openbabel-patch/src/stereo/cistrans.cpp")
-        .file("openbabel-patch/src/stereo/tetrahedral.cpp")
-        .file("openbabel-patch/src/stereo/tetranonplanar.cpp")
-        .file("openbabel-patch/src/stereo/stereo.cpp")
-        .file("openbabel-patch/src/stereo/perception.cpp")
-        .file("openbabel-patch/src/stereo/facade.cpp")
-        .file("openbabel-patch/src/stereo/squareplanar.cpp")
-        .file("openbabel-patch/src/stereo/tetraplanar.cpp")
-        .file("openbabel-patch/src/math/vector3.cpp")
-        .file("openbabel-patch/src/math/matrix3x3.cpp")
-        .file("openbabel-patch/src/math/spacegroup.cpp")
-        .file("openbabel-patch/src/math/transform3d.cpp")
-        .file("openbabel-patch/src/fingerprints/finger2.cpp")
-        .file("openbabel-patch/src/fingerprints/finger3.cpp")
-        .file("openbabel-patch/src/fingerprints/fingerecfp.cpp")
-        .file("openbabel-patch/src/fingerprint.cpp")
-        .file("openbabel-patch/src/forcefields/forcefielduff.cpp")
-        .file("openbabel-patch/src/forcefields/forcefieldgaff.cpp")
-        .file("openbabel-patch/src/forcefields/forcefieldmmff94.cpp")
-        .file("openbabel-patch/src/forcefields/forcefieldghemical.cpp")
-        .file("openbabel-patch/src/forcefield.cpp")
-        .file("openbabel-patch/src/molchrg.cpp")
-        // .file("openbabel-patch/src/forcefields/forcefieldmm2.cpp")  // compilation error when added
-        .file("openbabel-patch/src/formats/smilesformat.cpp")
-        .file("openbabel-patch/src/formats/xyzformat.cpp")
-        .file("openbabel-patch/src/formats/gaussformat.cpp")
-        .file("openbabel-patch/src/formats/gausscubeformat.cpp")
-        .file("openbabel-patch/src/formats/gausszmatformat.cpp")
-        .file("openbabel-patch/src/formats/fchkformat.cpp")
-        .file("openbabel-patch/src/formats/turbomoleformat.cpp")
-        .file("openbabel-patch/src/formats/daltonformat.cpp")
-        .file("openbabel-patch/src/formats/orcaformat.cpp")
-        .file("openbabel-patch/src/formats/siestaformat.cpp")
-        .file("openbabel-patch/src/formats/mdlformat.cpp")
-        .file("openbabel-patch/src/alias.cpp")
-        .file("openbabel-patch/src/mcdlutil.cpp")
-        .file("src/wrapper.cpp")
+        .files(source_files.iter().filter(|(_, _, copy_cpp)| *copy_cpp).map(|(ds, fs, _)| dir_ob_patch.join("src").join(ds).join(format!("{fs}.cpp"))))
+        .file("openbabel-patch/wrapper.cpp")  // srouce from "src/wrapper.cpp"
         .include(include)
         .include("src")
         .include("src/data")
         .include("openbabel-patch/include")
         .include("openbabel-patch/src/formats") // smilesvalence.h
+        .include("openbabel/src/") // stereo/stereoutil.h
         .flag_if_supported("-std=c++14")
         .flag_if_supported("-Wno-unused-parameter")
         .flag_if_supported("-Wno-unused-function")
