@@ -4,9 +4,15 @@
 #include <openbabel/oberror.h>
 #include <openbabel/obconversion.h>
 #include <openbabel/forcefield.h>
+#include <openbabel/op.h>
+#include <openbabel/descriptor.h>
 #include "wrapper.h"
 
 namespace OpenBabel {
+    OBFingerprint* OBFingerprint::FindType(const char* ID) { return nullptr; }
+    OBOp* OBOp::FindType(const char* ID) { return nullptr; }
+    OBDescriptor* OBDescriptor::FindType(const char* ID) { return nullptr; }
+    OBForceField* OBForceField::FindType(const char* ID) { return nullptr; }
 
 // OBConversion 
 
@@ -23,7 +29,8 @@ namespace OpenBabel {
 std::unique_ptr<OBConversion> OBConversion_new() { return std::unique_ptr<OBConversion>(new OBConversion()); }
 
 bool OBConversion_set_in_format(const std::unique_ptr<OBConversion> & pConv, const std::string &input_format) {
-    OBFormat* pFormat = OBConversion::FindFormat(input_format);
+    // OBFormat* pFormat = OBConversion::FindFormat(input_format);
+    OBFormat* pFormat = OBFormat::FindType(input_format.c_str());
     bool result = pConv.get()->SetInFormat(pFormat);
 
     if (!result) {
@@ -184,7 +191,9 @@ std::unique_ptr<OBMol> OBMol_from_smiles(const std::string &smiles) {
     std::stringstream ss(smiles);
     OBConversion conv(&ss);
 
-    if (!conv.SetInFormat("smi")) {
+    OBFormat* pFormat = OBFormat::FindType("smi");
+    if (!conv.SetInFormat(pFormat)) {
+    // if (!conv.SetInFormat("smi")) {
         std::stringstream errorMsg;
         errorMsg << "OBConversion::SetInFormat (\"smi\")  error" << std::endl;
         obErrorLog.ThrowError(__FUNCTION__, errorMsg.str(), obError);
