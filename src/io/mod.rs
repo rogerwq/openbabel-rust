@@ -108,4 +108,23 @@ Au  0.00000000  3.33130605  2.35558910".to_string();
         test_string(&conv);
         test_file(&conv);
     }
+
+    fn test_pdb(conv: &conversion::Conversion) {
+        let path_ref =
+            std::path::Path::new("./openbabel-sys/openbabel/test/files/00T_ideal.pdb").as_ref();
+        let format = formats::InputFormat::pdb;
+        let file_for_mol = FileForMol { path_ref, format };
+        let mol = file_for_mol
+            .to_mol(conv)
+            .expect("unable to create Molecule from file");
+        assert!(mol.is_valid());
+        assert_eq!(mol.num_atoms(), 22);
+        assert_eq!(mol.num_bonds(), 22);
+    }
+
+    #[test]
+    fn test_file_for_pdb() {
+        let conv = conversion::Conversion::new();
+        test_pdb(&conv);
+    }
 }
