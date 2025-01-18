@@ -57,6 +57,8 @@ pub enum InputFormat {
     /// SDF format
     sd,
     sdf,
+    /// PDB format
+    pdb,
 }
 
 #[derive(Eq, PartialEq, Display, Debug, EnumString)]
