@@ -115,6 +115,7 @@ fn main() {
         .file("openbabel/src/formats/orcaformat.cpp")
         .file("openbabel/src/formats/siestaformat.cpp")
         .file("openbabel/src/formats/mdlformat.cpp")
+        .file("openbabel/src/formats/pdbformat.cpp")
         .file("openbabel/src/alias.cpp")
         .file("openbabel/src/mcdlutil.cpp")
         .file("src/wrapper.cpp")
