@@ -28,6 +28,7 @@ This repository is composed of two packages:
 
 ## Logs
 ### v0.5
+- v0.5.4: add pdb format, branch v0.5.4 shall be rebased.
 - v0.5.3: two crate "openbabel" and "openbabel-sys" synchronized.
 - v0.5.2: smartsparttern.rs: add a test case of symmetric query
 - v0.5.1: smartspattern.rs: find_match() return ```Vec<Vec<...>>```
